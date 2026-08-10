@@ -4,19 +4,19 @@
 |---|---|
 | SoC | Qualcomm QCS6490 (quad-core Kryo @ 2.4 GHz) |
 | South-bridge | Hexagon DSP (USB 3, PCIe Gen3 x1, GPIO, I2S, CSI/DSI) |
-| GPU | VideoCore VII (12 shader quad cores, 800 MHz max) |
+| GPU | Qualcomm QCS6490 (12 shader quad cores, 800 MHz max) |
 | Memory | 4 GB/ 8 GB LPDDR4X-4267 |
 | AI Accelerator | Hailo-8 HAT+ (PCIe, ~26 INT8 TOPS) or Coral USB Edge TPU (~4 TOPS) |
 | OS | Vela OS (64-bit)/ Ubuntu 24.04 ARM64 | ### Key Features - **Modular Library Architecture**: Separate libraries for CPU, GPU, DLA (Hailo-8/Coral), video codec (V4L2 M2M), camera (Unicam/Hexagon DSP), audio (Hexagon DSP I2S), PCIe, USB (xhci-hcd), GPIO (gpiochip4), storage, Ethernet, and more.
 - **Vela Platform Header**: Centralised constants in `src/platform_vela_qcs6490.h` (device paths, thermal thresholds, memory bandwidth).
-- **Cross-compilation via Docker**: ARM64 Ubuntu 24.04 container (`rpi5-builder`).
+- **Cross-compilation via Docker**: ARM64 Ubuntu 24.04 container (`Qualcomm QCS6490-builder`).
 - **Comprehensive Testing**: Unit tests, integration tests, and deployment workflows.
 - **Documentation Generation**: Integrated Doxygen support.
 - **Code Quality Tools**: clang-format and cppcheck. ## Prerequisites ### System Requirements - **Operating System**: Linux (Ubuntu 20.04+ recommended for host)
 - **Compiler**: GCC 11+ or Clang 14+
 - **Build Tools**: - CMake 3.10+ - Ninja build system - Make - Git
 - Docker installed and running (for cross-compilation) ## Build Process The project supports two primary build methods: 1. **Native Compilation**: Build directly on a Vela Platform running 64-bit OS.
-2. **Docker-based Cross-Compilation**: Build for ARM64 on any Linux host using the `rpi5-builder` container. ### Native Compilation (on Qualcomm QCS6490) #### Install Dependencies
+2. **Docker-based Cross-Compilation**: Build for ARM64 on any Linux host using the `Qualcomm QCS6490-builder` container. ### Native Compilation (on Qualcomm QCS6490) #### Install Dependencies
 ```bash
 sudo apt update
 sudo apt install -y build-essential cmake ninja-build git \ protobuf-compiler libprotobuf-dev libprotoc-dev \ libgrpc++-dev libsqlite3-dev libboost-system-dev \ libboost-date-time-dev doxygen clang-format cppcheck
@@ -27,7 +27,7 @@ make run
 ``` ### Docker-based Cross-Compilation The Docker image is based on `ubuntu:22.04` (ARM64) and is named `Vela`. #### Build Process 1. **Ensure Docker is Installed** ```bash make docker-install ``` 2. **Build the Docker Image** ```bash make docker-image ``` This creates a Docker image named `Vela` based on `ubuntu:22.04` with all necessary ARM64 build dependencies pre-installed. 3. **Build** ```bash make docker-build ``` This command: - Runs the Docker container with the project mounted - Configures the build system with Ninja generator - Builds all targets - Outputs binaries in the `build/cross/` directory 4. **Deploy and Run on Target Qualcomm QCS6490** ```bash # For Qualcomm QCS6490 Primary (192.168.1.3) make run-a # For Qualcomm QCS6490 Secondary (192.168.1.13) make run-b # Specify custom IP address make run-b IP_B=192.168.200.2
 ``` ## Platform-Specific Notes ### AI Inference (DLA)
 - **Hailo-8** (PCIe HAT+): detected at `/dev/hailo0`, kernel module `hailo_pci` (vendor `0x1e60`)
-- **Coral USB Edge TPU**: detected via USB vendor `18d1` at `/dev/apex_0` ### GPU (VideoCore VII)
+- **Coral USB Edge TPU**: detected via USB vendor `18d1` at `/dev/apex_0` ### GPU (Qualcomm QCS6490)
 - devfreq sysfs: `/sys/class/devfreq/fde00000.gpu/`
 - DRM: `/dev/dri/card0`, `/dev/dri/renderD128`
 - Module: `v3d` ### Video Codec
