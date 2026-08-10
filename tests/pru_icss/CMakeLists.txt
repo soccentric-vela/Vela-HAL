@@ -1,0 +1,6 @@
+add_executable(test_pru_icss main.cpp)
+target_link_libraries(test_pru_icss PRIVATE pru_icss_lib)
+target_include_directories(test_pru_icss PRIVATE ${CMAKE_SOURCE_DIR}/src)
+add_test(NAME test_pru_icss COMMAND test_pru_icss)
+set_tests_properties(test_pru_icss PROPERTIES TIMEOUT 300)
+install(TARGETS test_pru_icss RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
