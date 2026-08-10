@@ -747,7 +747,7 @@ TestOutput SystemMemoryTesting::testDmaTofromMemory()
     // Check for sitara_compatible-dma driver
     std::ifstream drvF("/sys/bus/platform/drivers/sitara_compatible-dma/uevent");
     if (drvF.is_open()) {
-        data.push_back("Sitara compatible DMA driver: loaded");
+        data.push_back("Vela compatible DMA driver: loaded");
         dmaPresent = true;
     }
 

@@ -153,7 +153,7 @@ TestOutput SoftwareInterfaceTesting::testDeviceDriverLoading()
         {"nvme",          "NVMe/PCIe storage"},
         {"xhci_hcd",      "USB3 xHCI host"},
         {"sitara_compatible_dma",   "DMA engine"},
-        {"snd_sitara_compatible",   "Sitara compatible ALSA audio"},
+        {"snd_vela_compatible",   "Vela compatible ALSA audio"},
         {"brcmfmac",      "BCM WiFi (optional)"},
         {"gpio_brcmstb",  "GPIO (Vela gpiochip4)"},
     };

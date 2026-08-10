@@ -34,15 +34,15 @@
 // ---------------------------------------------------------------------------
 // Vela Platform VideoCore VII hardware constants
 // ---------------------------------------------------------------------------
-static constexpr int    VC7_QUAD_CORE_COUNT   = 12;    ///< 12 shader quad cores
-static constexpr int    VC7_SHADER_UNIT_COUNT = 48;    ///< 4 ALUs per quad core
-static constexpr double VC7_MAX_FREQ_MHZ      = VELA_QCS6490_GPU_MAX_FREQ_MHZ;  // 800 MHz
-static constexpr double VC7_MIN_FREQ_MHZ      = VELA_QCS6490_GPU_MIN_FREQ_MHZ;  // 300 MHz
-static constexpr double VC7_TEMP_MAX_C        = VELA_QCS6490_GPU_TEMP_MAX_C;    // 85 °C
+static constexpr int    ADRENO_QUAD_CORE_COUNT   = 8;    ///< 12 shader quad cores
+static constexpr int    ADRENO_SHADER_UNIT_COUNT = 32;    ///< 4 ALUs per quad core
+static constexpr double ADRENO_MAX_FREQ_MHZ      = VELA_QCS6490_GPU_MAX_FREQ_MHZ;  // 800 MHz
+static constexpr double ADRENO_MIN_FREQ_MHZ      = VELA_QCS6490_GPU_MIN_FREQ_MHZ;  // 300 MHz
+static constexpr double ADRENO_TEMP_MAX_C        = VELA_QCS6490_GPU_TEMP_MAX_C;    // 85 °C
 // Theoretical FP32 peak: 48 ALUs × 2 FLOPs × 800 MHz = ~76.8 GFLOPS
-static constexpr double VC7_FP32_GFLOPS_PEAK = 76.8;
-static constexpr double VC7_FP32_GFLOPS_MIN  = 10.0;  ///< conservative software floor
-static constexpr double VC7_BW_MIN_GBS       = 5.0;   ///< effective minimum under load
+static constexpr double ADRENO_FP32_GFLOPS_PEAK = 1700.0;
+static constexpr double ADRENO_FP32_GFLOPS_MIN  = 200.0;  ///< conservative software floor
+static constexpr double ADRENO_BW_MIN_GBS       = 40.0;   ///< effective minimum under load
 
 // ---------------------------------------------------------------------------
 // sysfs / procfs helper utilities
@@ -212,8 +212,8 @@ TestOutput GpuTesting::testCudaCoresFunctionality()
 
     data.push_back("Platform: " + std::string(PLATFORM_NAME) + " (VideoCore VII – no CUDA)");
     data.push_back("GPU architecture: Broadcom VideoCore VII (V3D 7.x)");
-    data.push_back("Shader quad cores: " + std::to_string(VC7_QUAD_CORE_COUNT) +
-                   "  (" + std::to_string(VC7_SHADER_UNIT_COUNT) + " unified ALUs)");
+    data.push_back("Shader quad cores: " + std::to_string(ADRENO_QUAD_CORE_COUNT) +
+                   "  (" + std::to_string(ADRENO_SHADER_UNIT_COUNT) + " unified ALUs)");
 
     bool present = gpuDevicePresent();
     data.push_back("V3D DRM device (/dev/dri/renderD128): " + std::string(present ? "PRESENT" : "NOT FOUND"));
@@ -253,8 +253,8 @@ TestOutput GpuTesting::testCudaCoresFunctionality()
     data.push_back("NOTE: CUDA is NVIDIA-specific; VideoCore VII uses the open-source Mesa/V3D driver.");
 
     if (passed)
-        data.push_back("PASS: VideoCore VII GPU device verified (" + std::to_string(VC7_QUAD_CORE_COUNT) +
-                       " quad cores / " + std::to_string(VC7_SHADER_UNIT_COUNT) + " ALUs).");
+        data.push_back("PASS: VideoCore VII GPU device verified (" + std::to_string(ADRENO_QUAD_CORE_COUNT) +
+                       " quad cores / " + std::to_string(ADRENO_SHADER_UNIT_COUNT) + " ALUs).");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -317,8 +317,8 @@ TestOutput GpuTesting::testGpuClockFrequencyStabilityAndThrottling()
     bool passed = true;
 
     data.push_back("Expected Adreno 643 GPU clock range: " +
-                   std::to_string(static_cast<int>(VC7_MIN_FREQ_MHZ)) + " – " +
-                   std::to_string(static_cast<int>(VC7_MAX_FREQ_MHZ)) + " MHz");
+                   std::to_string(static_cast<int>(ADRENO_MIN_FREQ_MHZ)) + " – " +
+                   std::to_string(static_cast<int>(ADRENO_MAX_FREQ_MHZ)) + " MHz");
 
     long long curHz = gpuGetCurFreqHz();
     long long maxHz = gpuGetMaxFreqHz();
@@ -326,7 +326,7 @@ TestOutput GpuTesting::testGpuClockFrequencyStabilityAndThrottling()
     if (curHz > 0) {
         double curMHz = static_cast<double>(curHz) / 1e6;
         data.push_back("GPU current clock: " + std::to_string(curMHz) + " MHz");
-        if (curMHz < VC7_MIN_FREQ_MHZ / 2.0) {
+        if (curMHz < ADRENO_MIN_FREQ_MHZ / 2.0) {
             passed = false;
             data.push_back("FAIL: GPU clock suspiciously low – possible power gate or stall.");
         }
@@ -337,7 +337,7 @@ TestOutput GpuTesting::testGpuClockFrequencyStabilityAndThrottling()
     if (maxHz > 0) {
         double maxMHz = static_cast<double>(maxHz) / 1e6;
         data.push_back("GPU max clock (devfreq): " + std::to_string(maxMHz) + " MHz");
-        if (maxMHz < VC7_MAX_FREQ_MHZ * 0.5) {
+        if (maxMHz < ADRENO_MAX_FREQ_MHZ * 0.5) {
             passed = false;
             data.push_back("FAIL: GPU max clock is unexpectedly low.");
         }
@@ -379,7 +379,7 @@ TestOutput GpuTesting::testGraphicsProcessingClustersBothClusters()
     bool passed = true;
 
     data.push_back("Platform: Vela Platform – VideoCore VII");
-    data.push_back("Adreno 643 structure: " + std::to_string(VC7_QUAD_CORE_COUNT) +
+    data.push_back("Adreno 643 structure: " + std::to_string(ADRENO_QUAD_CORE_COUNT) +
                    " shader quad cores (no GPC/TPC hierarchy)");
 
     if (!gpuDevicePresent()) {
@@ -441,7 +441,7 @@ TestOutput GpuTesting::testTextureProcessingClustersAll8Tpcs()
     bool passed = true;
 
     data.push_back("VideoCore VII: texture units integrated in each of the " +
-                   std::to_string(VC7_QUAD_CORE_COUNT) + " quad cores.");
+                   std::to_string(ADRENO_QUAD_CORE_COUNT) + " quad cores.");
     data.push_back("(No separate TPC hierarchy; VideoCore VII uses shader quads)");
 
     if (!gpuDevicePresent()) {
@@ -490,7 +490,7 @@ TestOutput GpuTesting::testStreamingMultiprocessorsAll16Sms()
     bool passed = true;
 
     data.push_back("VideoCore VII has no Streaming Multiprocessors (this is an NVIDIA concept).");
-    data.push_back("Equivalent: " + std::to_string(VC7_QUAD_CORE_COUNT) +
+    data.push_back("Equivalent: " + std::to_string(ADRENO_QUAD_CORE_COUNT) +
                    " shader quad cores (V3D pipeline slices)");
 
     if (!gpuDevicePresent()) {
@@ -518,7 +518,7 @@ TestOutput GpuTesting::testStreamingMultiprocessorsAll16Sms()
 
     if (passed)
         data.push_back("PASS: VideoCore VII pipeline verified (" +
-                       std::to_string(VC7_QUAD_CORE_COUNT) + " quad cores).");
+                       std::to_string(ADRENO_QUAD_CORE_COUNT) + " quad cores).");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -586,7 +586,7 @@ TestOutput GpuTesting::testTextureMappingUnitsAll64Tmus()
     bool passed = true;
 
     data.push_back("VideoCore VII: integrated texture samplers in each quad core.");
-    data.push_back("Total quad cores: " + std::to_string(VC7_QUAD_CORE_COUNT));
+    data.push_back("Total quad cores: " + std::to_string(ADRENO_QUAD_CORE_COUNT));
 
     if (!gpuDevicePresent()) {
         data.push_back("FAIL: Adreno 643 GPU not present.");
@@ -629,7 +629,7 @@ TestOutput GpuTesting::testL1CachePerSm()
     bool passed = true;
 
     data.push_back("VideoCore VII: per-quad-core instruction/data caches (V3D L1).");
-    data.push_back("L2 cache: shared across all " + std::to_string(VC7_QUAD_CORE_COUNT) + " quad cores.");
+    data.push_back("L2 cache: shared across all " + std::to_string(ADRENO_QUAD_CORE_COUNT) + " quad cores.");
 
     if (!gpuDevicePresent()) {
         data.push_back("FAIL: Adreno 643 GPU not present.");
@@ -793,7 +793,7 @@ TestOutput GpuTesting::testMemoryBandwidthToGpu()
     bool passed = true;
 
     data.push_back("Vela LPDDR4X-4267 shared memory theoretical bandwidth: ~17 GB/s");
-    data.push_back("Minimum acceptable (CPU-side): " + std::to_string(VC7_BW_MIN_GBS) + " GB/s");
+    data.push_back("Minimum acceptable (CPU-side): " + std::to_string(ADRENO_BW_MIN_GBS) + " GB/s");
 
     const size_t BUF_BYTES = 128 * 1024 * 1024ULL;  // 128 MB
     std::vector<char> src(BUF_BYTES, 'A');
@@ -807,9 +807,9 @@ TestOutput GpuTesting::testMemoryBandwidthToGpu()
 
     data.push_back("CPU memcpy bandwidth: " + std::to_string(bwGBs) + " GB/s (128 MB buffer)");
 
-    if (bwGBs < VC7_BW_MIN_GBS) {
+    if (bwGBs < ADRENO_BW_MIN_GBS) {
         passed = false;
-        data.push_back("FAIL: Memory bandwidth below " + std::to_string(VC7_BW_MIN_GBS) + " GB/s minimum.");
+        data.push_back("FAIL: Memory bandwidth below " + std::to_string(ADRENO_BW_MIN_GBS) + " GB/s minimum.");
     } else {
         data.push_back("Memory bandwidth within acceptable range.");
     }
@@ -932,15 +932,15 @@ TestOutput GpuTesting::testFp32ComputePerformance()
     bool passed = true;
 
     data.push_back("VideoCore VII FP32 peak (theoretical): " +
-                   std::to_string(VC7_FP32_GFLOPS_PEAK) + " GFLOPS");
+                   std::to_string(ADRENO_FP32_GFLOPS_PEAK) + " GFLOPS");
     data.push_back("Minimum expected (CPU FP32): " +
-                   std::to_string(VC7_FP32_GFLOPS_MIN) + " GFLOPS");
+                   std::to_string(ADRENO_FP32_GFLOPS_MIN) + " GFLOPS");
 
     double cpuGflops = cpuFp32Benchmark(0.5);
     data.push_back("CPU FP32 throughput (single-core, 0.5 s): " +
                    std::to_string(cpuGflops) + " GFLOPS");
 
-    if (cpuGflops < VC7_FP32_GFLOPS_MIN) {
+    if (cpuGflops < ADRENO_FP32_GFLOPS_MIN) {
         passed = false;
         data.push_back("FAIL: CPU FP32 throughput below expected minimum.");
     }
@@ -948,7 +948,7 @@ TestOutput GpuTesting::testFp32ComputePerformance()
     long long gpuHz = gpuGetMaxFreqHz();
     if (gpuHz > 0) {
         double gpuMHz = static_cast<double>(gpuHz) / 1e6;
-        double gpuGflops = static_cast<double>(VC7_SHADER_UNIT_COUNT) * 2.0 * gpuMHz / 1e3;
+        double gpuGflops = static_cast<double>(ADRENO_SHADER_UNIT_COUNT) * 2.0 * gpuMHz / 1e3;
         data.push_back("Adreno 643 GPU theoretical FP32 @ " + std::to_string(gpuMHz) + " MHz: " +
                        std::to_string(gpuGflops) + " GFLOPS");
     }
@@ -1110,18 +1110,18 @@ TestOutput GpuTesting::testGpuThermalThrottlingBehavior()
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Vela thermal throttle onset: " + std::to_string(static_cast<int>(VC7_TEMP_MAX_C)) + " °C");
+    data.push_back("Vela thermal throttle onset: " + std::to_string(static_cast<int>(ADRENO_TEMP_MAX_C)) + " °C");
     data.push_back("Qualcomm QCS6490 die temperature is shared by CPU and Adreno 643 GPU.");
 
     long long tempMC = gpuGetTempMilliC();
     if (tempMC > 0) {
         double tempC = static_cast<double>(tempMC) / 1000.0;
         data.push_back("SoC temperature: " + std::to_string(tempC) + " °C");
-        if (tempC >= VC7_TEMP_MAX_C) {
+        if (tempC >= ADRENO_TEMP_MAX_C) {
             passed = false;
             data.push_back("FAIL: Temperature at or above thermal limit (" +
-                           std::to_string(static_cast<int>(VC7_TEMP_MAX_C)) + " °C).");
-        } else if (tempC >= VC7_TEMP_MAX_C * 0.85) {
+                           std::to_string(static_cast<int>(ADRENO_TEMP_MAX_C)) + " °C).");
+        } else if (tempC >= ADRENO_TEMP_MAX_C * 0.85) {
             data.push_back("WARNING: Temperature is high (>85% of limit).");
         } else {
             data.push_back("Temperature within safe operating range.");
@@ -1253,7 +1253,7 @@ TestOutput GpuTesting::testSustainedPerformanceOverTime()
                        "min=" + std::to_string(minF) + " MHz, " +
                        "max=" + std::to_string(maxF) + " MHz, " +
                        "avg=" + std::to_string(avgF) + " MHz");
-        if (minF < VC7_MAX_FREQ_MHZ * 0.5 && minF > 0)
+        if (minF < ADRENO_MAX_FREQ_MHZ * 0.5 && minF > 0)
             data.push_back("WARNING: GPU dropped below 50% of max clock – possible throttling.");
     } else {
         std::string fwClk = gpuRunCmd("ti-syscmd measure_clock v3d 2>/dev/null");
@@ -1266,7 +1266,7 @@ TestOutput GpuTesting::testSustainedPerformanceOverTime()
     if (!tempSamples.empty()) {
         double maxTemp = *std::max_element(tempSamples.begin(), tempSamples.end());
         data.push_back("Max SoC temperature during test: " + std::to_string(maxTemp) + " °C");
-        if (maxTemp >= VC7_TEMP_MAX_C) {
+        if (maxTemp >= ADRENO_TEMP_MAX_C) {
             passed = false;
             data.push_back("FAIL: SoC hit thermal limit during sustained test.");
         }

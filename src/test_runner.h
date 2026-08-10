@@ -95,7 +95,7 @@ static long long trParseDuration(const std::string& s)
 // Built-in Vela Platform hardware monitor items
 // ---------------------------------------------------------------------------
 
-static std::vector<MonitorItem> trSitaraMonitorItems()
+static std::vector<MonitorItem> trVelaMonitorItems()
 {
     return {
         {"cpu_temp_C", []() {
@@ -373,7 +373,7 @@ int runTestApp(const std::string& appName, int argc, char* argv[])
                   << "ms  duration=" << duration_ms << "ms"
                   << "  Ctrl+C to abort early\n";
         std::signal(SIGINT, testRunnerSigHandler);
-        tester.runMonitoringTest(interval_ms, duration_ms, trSitaraMonitorItems(),
+        tester.runMonitoringTest(interval_ms, duration_ms, trVelaMonitorItems(),
                                   [](const MonitoringSnapshot& snap) {
                                       trPrintCycleHeader(snap.cycle, "monitor-test", false);
                                       trPrintMonitorData(snap.monitorData);
