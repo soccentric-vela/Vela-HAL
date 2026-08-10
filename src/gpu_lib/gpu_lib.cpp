@@ -130,7 +130,7 @@ static long long gpuGetTempMilliC()
         if (name.find("thermal_zone") == std::string::npos)
             continue;
         std::string typeStr = gpuReadFile(base + name + "/type");
-        // Vela thermal zone 0 is "cpu-thermal" (covers the whole Sitara AM62x/AM64x die)
+        // Vela thermal zone 0 is "cpu-thermal" (covers the whole Qualcomm QCS6490 die)
         if (typeStr.find("cpu") != std::string::npos || typeStr.find("soc") != std::string::npos ||
             typeStr.find("bcm") != std::string::npos || typeStr.find("gpu") != std::string::npos) {
             closedir(dir);
@@ -280,7 +280,7 @@ TestOutput GpuTesting::testTensorCoresOperation()
     data.push_back("INFO: AI acceleration on Vela is via:");
     data.push_back("  - Vulkan 1.2 compute shaders (general-purpose GPU compute)");
     data.push_back("  - OpenCL 3.0 (via Mesa Clover / Rusticl)");
-    data.push_back("  - TFLite delegate (CPU NEON/SVE on Cortex-A76)");
+    data.push_back("  - TFLite delegate (CPU NEON/SVE on Kryo)");
     data.push_back("  - Optional: Hailo-8 PCIe M.2 (~26 TOPS INT8)");
     data.push_back("  - Optional: Google Coral USB Edge TPU (~4 TOPS INT8)");
 
@@ -295,7 +295,7 @@ TestOutput GpuTesting::testTensorCoresOperation()
                    std::string(vulkanPresent ? "available" : "unavailable"));
 
     if (passed)
-        data.push_back("PASS: Tensor core check complete (N/A for VC7; external AI accelerators scanned).");
+        data.push_back("PASS: Tensor core check complete (N/A for Adreno 643; external AI accelerators scanned).");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -316,7 +316,7 @@ TestOutput GpuTesting::testGpuClockFrequencyStabilityAndThrottling()
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Expected VC7 GPU clock range: " +
+    data.push_back("Expected Adreno 643 GPU clock range: " +
                    std::to_string(static_cast<int>(VC7_MIN_FREQ_MHZ)) + " – " +
                    std::to_string(static_cast<int>(VC7_MAX_FREQ_MHZ)) + " MHz");
 
@@ -357,7 +357,7 @@ TestOutput GpuTesting::testGpuClockFrequencyStabilityAndThrottling()
     }
 
     if (passed)
-        data.push_back("PASS: VC7 GPU clock frequency within expected range.");
+        data.push_back("PASS: Adreno 643 GPU clock frequency within expected range.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -379,11 +379,11 @@ TestOutput GpuTesting::testGraphicsProcessingClustersBothClusters()
     bool passed = true;
 
     data.push_back("Platform: Vela Platform – VideoCore VII");
-    data.push_back("VC7 structure: " + std::to_string(VC7_QUAD_CORE_COUNT) +
+    data.push_back("Adreno 643 structure: " + std::to_string(VC7_QUAD_CORE_COUNT) +
                    " shader quad cores (no GPC/TPC hierarchy)");
 
     if (!gpuDevicePresent()) {
-        data.push_back("FAIL: VC7 GPU not present.");
+        data.push_back("FAIL: Adreno 643 GPU not present.");
         {
             TestOutput _out;
             _out.status = hal::Status::FAIL;
@@ -445,7 +445,7 @@ TestOutput GpuTesting::testTextureProcessingClustersAll8Tpcs()
     data.push_back("(No separate TPC hierarchy; VideoCore VII uses shader quads)");
 
     if (!gpuDevicePresent()) {
-        data.push_back("FAIL: VC7 GPU not present.");
+        data.push_back("FAIL: Adreno 643 GPU not present.");
         {
             TestOutput _out;
             _out.status = hal::Status::FAIL;
@@ -468,7 +468,7 @@ TestOutput GpuTesting::testTextureProcessingClustersAll8Tpcs()
     data.push_back("Max texture size: 4096×4096 (OpenGL ES 3.1)");
 
     if (passed)
-        data.push_back("PASS: VC7 texture processing capability confirmed.");
+        data.push_back("PASS: Adreno 643 texture processing capability confirmed.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -482,7 +482,7 @@ TestOutput GpuTesting::testTextureProcessingClustersAll8Tpcs()
 // ---------------------------------------------------------------------------
 // 6. testStreamingMultiprocessorsAll16Sms
 //    No Streaming Multiprocessors on VideoCore VII.
-//    Reports VC7 quad-core count and verifies V3D driver binding.
+//    Reports Adreno 643 quad-core count and verifies V3D driver binding.
 // ---------------------------------------------------------------------------
 TestOutput GpuTesting::testStreamingMultiprocessorsAll16Sms()
 {
@@ -494,7 +494,7 @@ TestOutput GpuTesting::testStreamingMultiprocessorsAll16Sms()
                    " shader quad cores (V3D pipeline slices)");
 
     if (!gpuDevicePresent()) {
-        data.push_back("FAIL: VC7 GPU not present.");
+        data.push_back("FAIL: Adreno 643 GPU not present.");
         {
             TestOutput _out;
             _out.status = hal::Status::FAIL;
@@ -543,7 +543,7 @@ TestOutput GpuTesting::testRenderOutputUnitsAll32Rops()
     data.push_back("On-chip Tile Buffer (TLB) replaces traditional ROP units.");
 
     if (!gpuDevicePresent()) {
-        data.push_back("FAIL: VC7 GPU not present.");
+        data.push_back("FAIL: Adreno 643 GPU not present.");
         {
             TestOutput _out;
             _out.status = hal::Status::FAIL;
@@ -565,7 +565,7 @@ TestOutput GpuTesting::testRenderOutputUnitsAll32Rops()
     data.push_back("Supported output formats: RGB565, RGBA8, RGBA16F, D24S8, …");
 
     if (passed)
-        data.push_back("PASS: VC7 tile-based render output system verified.");
+        data.push_back("PASS: Adreno 643 tile-based render output system verified.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -589,7 +589,7 @@ TestOutput GpuTesting::testTextureMappingUnitsAll64Tmus()
     data.push_back("Total quad cores: " + std::to_string(VC7_QUAD_CORE_COUNT));
 
     if (!gpuDevicePresent()) {
-        data.push_back("FAIL: VC7 GPU not present.");
+        data.push_back("FAIL: Adreno 643 GPU not present.");
         {
             TestOutput _out;
             _out.status = hal::Status::FAIL;
@@ -601,14 +601,14 @@ TestOutput GpuTesting::testTextureMappingUnitsAll64Tmus()
     }
 
     data.push_back("OpenGL ES 3.1 min texture image units: 16 (per spec)");
-    data.push_back("VC7 supports: trilinear, anisotropic, cube-map, 2D array textures");
+    data.push_back("Adreno 643 supports: trilinear, anisotropic, cube-map, 2D array textures");
 
     std::string mesaInfo = gpuRunCmd("LIBGL_ALWAYS_SOFTWARE=0 glxinfo 2>/dev/null | grep -i 'texture\\|vendor' | head -5");
     if (!mesaInfo.empty())
         data.push_back("Mesa texture info: " + mesaInfo.substr(0, 200));
 
     if (passed)
-        data.push_back("PASS: VC7 texture mapping capability verified.");
+        data.push_back("PASS: Adreno 643 texture mapping capability verified.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -632,7 +632,7 @@ TestOutput GpuTesting::testL1CachePerSm()
     data.push_back("L2 cache: shared across all " + std::to_string(VC7_QUAD_CORE_COUNT) + " quad cores.");
 
     if (!gpuDevicePresent()) {
-        data.push_back("FAIL: VC7 GPU not present.");
+        data.push_back("FAIL: Adreno 643 GPU not present.");
         {
             TestOutput _out;
             _out.status = hal::Status::FAIL;
@@ -657,7 +657,7 @@ TestOutput GpuTesting::testL1CachePerSm()
     data.push_back("V3D L2 unified: ~128 KB shared (implementation-defined)");
 
     if (passed)
-        data.push_back("PASS: VC7 per-core cache structure documented.");
+        data.push_back("PASS: Adreno 643 per-core cache structure documented.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -680,7 +680,7 @@ TestOutput GpuTesting::testL2Cache()
     data.push_back("VideoCore VII shared L2 cache: ~128 KB (V3D implementation)");
 
     if (!gpuDevicePresent()) {
-        data.push_back("FAIL: VC7 GPU not present.");
+        data.push_back("FAIL: Adreno 643 GPU not present.");
         {
             TestOutput _out;
             _out.status = hal::Status::FAIL;
@@ -704,7 +704,7 @@ TestOutput GpuTesting::testL2Cache()
     }
 
     if (passed)
-        data.push_back("PASS: VC7 L2 cache verified.");
+        data.push_back("PASS: Adreno 643 L2 cache verified.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -726,7 +726,7 @@ TestOutput GpuTesting::testCacheCoherencyAndHitRates()
     bool passed = true;
 
     data.push_back("Cache coherency test: sequential vs. large-stride CPU memory access.");
-    data.push_back("(Shared LPDDR4X path is used by both CPU and VC7 GPU on Vela)");
+    data.push_back("(Shared LPDDR4X path is used by both CPU and Adreno 643 GPU on Vela)");
 
     const size_t BUF_SIZE = 8 * 1024 * 1024; // 8 MB – larger than L2
     const size_t STRIDE = 64;                // cache-line sized stride
@@ -784,7 +784,7 @@ TestOutput GpuTesting::testCacheCoherencyAndHitRates()
 
 // ---------------------------------------------------------------------------
 // 12. testMemoryBandwidthToGpu
-//     Vela CPU and VC7 GPU share LPDDR4X-4267 (~17 GB/s theoretical).
+//     Vela CPU and Adreno 643 GPU share LPDDR4X-4267 (~17 GB/s theoretical).
 //     Measures CPU-side bandwidth as a proxy for the shared memory path.
 // ---------------------------------------------------------------------------
 TestOutput GpuTesting::testMemoryBandwidthToGpu()
@@ -833,8 +833,8 @@ TestOutput GpuTesting::testMemoryBandwidthToGpu()
 
 // ---------------------------------------------------------------------------
 // 13. testInt8PerformanceVerification
-//     VC7 has no dedicated INT8 tensor hardware. Measures CPU NEON INT8
-//     throughput (Cortex-A76 NEON dot-product) as the available INT8 path.
+//     Adreno 643 has no dedicated INT8 tensor hardware. Measures CPU NEON INT8
+//     throughput (Kryo NEON dot-product) as the available INT8 path.
 // ---------------------------------------------------------------------------
 TestOutput GpuTesting::testInt8PerformanceVerification()
 {
@@ -842,7 +842,7 @@ TestOutput GpuTesting::testInt8PerformanceVerification()
     bool passed = true;
 
     data.push_back("VideoCore VII: no dedicated INT8 tensor hardware.");
-    data.push_back("INT8 inference on Vela uses: Cortex-A76 NEON (sdot/udot), or external HW.");
+    data.push_back("INT8 inference on Vela uses: Kryo NEON (sdot/udot), or external HW.");
 
     const long long OPS = 500000000LL;
     volatile int8_t a = 1, b = 2, c = 0;
@@ -910,7 +910,7 @@ TestOutput GpuTesting::testInt8SparsePerformance()
     data.push_back("50%-sparse INT8 dot product (1M elems): " + std::to_string(ms) + " ms");
 
     if (passed)
-        data.push_back("PASS: Sparse INT8 test completed (software path on Cortex-A76).");
+        data.push_back("PASS: Sparse INT8 test completed (software path on Kryo).");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -923,8 +923,8 @@ TestOutput GpuTesting::testInt8SparsePerformance()
 
 // ---------------------------------------------------------------------------
 // 15. testFp32ComputePerformance
-//     Measures FP32 CPU throughput and reports theoretical VC7 GPU FP32.
-//     VC7: 48 ALUs × 2 FLOPs/cycle × 800 MHz ≈ 76.8 GFLOPS theoretical.
+//     Measures FP32 CPU throughput and reports theoretical Adreno 643 GPU FP32.
+//     Adreno 643: 48 ALUs × 2 FLOPs/cycle × 800 MHz ≈ 76.8 GFLOPS theoretical.
 // ---------------------------------------------------------------------------
 TestOutput GpuTesting::testFp32ComputePerformance()
 {
@@ -949,7 +949,7 @@ TestOutput GpuTesting::testFp32ComputePerformance()
     if (gpuHz > 0) {
         double gpuMHz = static_cast<double>(gpuHz) / 1e6;
         double gpuGflops = static_cast<double>(VC7_SHADER_UNIT_COUNT) * 2.0 * gpuMHz / 1e3;
-        data.push_back("VC7 GPU theoretical FP32 @ " + std::to_string(gpuMHz) + " MHz: " +
+        data.push_back("Adreno 643 GPU theoretical FP32 @ " + std::to_string(gpuMHz) + " MHz: " +
                        std::to_string(gpuGflops) + " GFLOPS");
     }
 
@@ -975,10 +975,10 @@ TestOutput GpuTesting::testFp16ComputePerformance()
     bool passed = true;
 
     data.push_back("VideoCore VII FP16: supported via Vulkan VK_KHR_shader_float16_int8");
-    data.push_back("VC7 FP16 peak (theoretical, 2× FP32): ~153.6 GFLOPS");
+    data.push_back("Adreno 643 FP16 peak (theoretical, 2× FP32): ~153.6 GFLOPS");
 
     if (!gpuDevicePresent()) {
-        data.push_back("FAIL: VC7 GPU not present.");
+        data.push_back("FAIL: Adreno 643 GPU not present.");
         {
             TestOutput _out;
             _out.status = hal::Status::FAIL;
@@ -1003,7 +1003,7 @@ TestOutput GpuTesting::testFp16ComputePerformance()
         data.push_back("Vulkan info: not available (vulkaninfo not installed or no display)");
 
     if (passed)
-        data.push_back("PASS: FP16 compute capability verified on VC7.");
+        data.push_back("PASS: FP16 compute capability verified on Adreno 643.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1026,7 +1026,7 @@ TestOutput GpuTesting::testFp16TensorCorePerformance()
 
     data.push_back("VideoCore VII: NO Tensor Cores (NVIDIA-exclusive hardware).");
     data.push_back("FP16 matrix operations on Vela:");
-    data.push_back("  - CPU: Cortex-A76 NEON FMLA (fused multiply-accumulate, FP16)");
+    data.push_back("  - CPU: Kryo NEON FMLA (fused multiply-accumulate, FP16)");
     data.push_back("  - GPU: Vulkan VK_KHR_shader_float16_int8 compute shaders");
     data.push_back("  - External: Hailo-8 PCIe (~26 TOPS INT8/FP16 hybrid)");
 
@@ -1059,7 +1059,7 @@ TestOutput GpuTesting::testFp16TensorCorePerformance()
 // ---------------------------------------------------------------------------
 // 18. testMixedPrecisionOperations
 //     Verifies mixed-precision (FP16 compute, FP32 accumulate) CPU path on
-//     Cortex-A76. Vulkan compute on VC7 also supports this via extensions.
+//     Kryo. Vulkan compute on Adreno 643 also supports this via extensions.
 // ---------------------------------------------------------------------------
 TestOutput GpuTesting::testMixedPrecisionOperations()
 {
@@ -1102,7 +1102,7 @@ TestOutput GpuTesting::testMixedPrecisionOperations()
 
 // ---------------------------------------------------------------------------
 // 19. testGpuThermalThrottlingBehavior
-//     Reads Sitara AM62x/AM64x die temperature (shared by CPU and VC7 GPU) and checks
+//     Reads Qualcomm QCS6490 die temperature (shared by CPU and Adreno 643 GPU) and checks
 //     for Vela firmware throttling flags via ti-syscmd.
 // ---------------------------------------------------------------------------
 TestOutput GpuTesting::testGpuThermalThrottlingBehavior()
@@ -1111,7 +1111,7 @@ TestOutput GpuTesting::testGpuThermalThrottlingBehavior()
     bool passed = true;
 
     data.push_back("Vela thermal throttle onset: " + std::to_string(static_cast<int>(VC7_TEMP_MAX_C)) + " °C");
-    data.push_back("Sitara AM62x/AM64x die temperature is shared by CPU and VC7 GPU.");
+    data.push_back("Qualcomm QCS6490 die temperature is shared by CPU and Adreno 643 GPU.");
 
     long long tempMC = gpuGetTempMilliC();
     if (tempMC > 0) {
@@ -1144,7 +1144,7 @@ TestOutput GpuTesting::testGpuThermalThrottlingBehavior()
     }
 
     if (passed)
-        data.push_back("PASS: VC7 thermal behaviour verified.");
+        data.push_back("PASS: Adreno 643 thermal behaviour verified.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1204,7 +1204,7 @@ TestOutput GpuTesting::testGpuPowerConsumptionAtVariousLoads()
 
 // ---------------------------------------------------------------------------
 // 21. testSustainedPerformanceOverTime
-//     Monitors VC7 GPU devfreq frequency over ~2 seconds under CPU load
+//     Monitors Adreno 643 GPU devfreq frequency over ~2 seconds under CPU load
 //     and verifies frequency does not drop below 50% of maximum.
 // ---------------------------------------------------------------------------
 TestOutput GpuTesting::testSustainedPerformanceOverTime()
@@ -1216,7 +1216,7 @@ TestOutput GpuTesting::testSustainedPerformanceOverTime()
     const int SAMPLE_MS  = 400;
 
     data.push_back("Sustained performance test: " + std::to_string(DURATION_S) + " seconds.");
-    data.push_back("Monitoring VC7 devfreq and SoC temperature.");
+    data.push_back("Monitoring Adreno 643 devfreq and SoC temperature.");
 
     std::vector<double> freqSamples;
     std::vector<double> tempSamples;
@@ -1273,7 +1273,7 @@ TestOutput GpuTesting::testSustainedPerformanceOverTime()
     }
 
     if (passed)
-        data.push_back("PASS: Sustained VC7 GPU performance test completed.");
+        data.push_back("PASS: Sustained Adreno 643 GPU performance test completed.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;

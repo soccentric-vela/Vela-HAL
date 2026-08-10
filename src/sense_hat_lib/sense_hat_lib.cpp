@@ -7,7 +7,7 @@
  *   - LPS25H  pressure sensor       — I2C-1 @ 0x5F, IIO driver lps25h
  *   - LSM9DS1 9-DOF IMU             — I2C-1 accel 0x1C / gyro 0x6A / mag 0x1E
  *   - LED matrix ATtiny88           — I2C-1 @ 0x46, exposed as /dev/fb1 via
- *                                     sitara-sense-fb kernel module
+ *                                     sense-fb kernel module
  *   - 5-way joystick                — I2C-1 @ 0x46, evdev input device
  *
  * All paths are accessed via Linux sysfs / IIO / evdev.
@@ -95,12 +95,12 @@ TestOutput SenseHatTesting::testSenseHatDetection()
                         : "[WARN] /dev/i2c-1 absent — enable with dtparam=i2c_arm=on");
 
     // Check overlay loaded
-    std::string cmdline = shReadFile("/boot/firmware/config.txt");
+    std::string cmdline = shReadFile("/boot/firmware/extlinux.conf");
     bool overlayLoaded = !shRunCmd("dtoverlay -l 2>/dev/null | grep -c 'sense'").empty();
     (void)overlayLoaded;
-    bool senseFb = shPathExists("/dev/fb1") || !shRunCmd("lsmod | grep -c 'rpi_sense_fb'").empty();
-    data.push_back(senseFb ? "[PASS] sitara-sense-fb module / /dev/fb1 present"
-                           : "[INFO] sitara-sense-fb not loaded (add dtoverlay=sitara-sense-hat to config.txt)");
+    bool senseFb = shPathExists("/dev/fb1") || !shRunCmd("lsmod | grep -c 'sense_fb'").empty();
+    data.push_back(senseFb ? "[PASS] sense-fb module / /dev/fb1 present"
+                           : "[INFO] sense-fb not loaded (add dtoverlay=sitara-sense-hat to extlinux.conf)");
 
     // Sense HAT I2C addresses
     struct { const char* name; const char* addr; } addrs[] = {
@@ -140,15 +140,15 @@ TestOutput SenseHatTesting::testSenseHatDetection()
 }
 
 /**
- * @brief Verify the 8×8 LED matrix is accessible via the sitara-sense-fb framebuffer.
+ * @brief Verify the 8×8 LED matrix is accessible via the sense-fb framebuffer.
  */
 TestOutput SenseHatTesting::testLedMatrix()
 {
     std::vector<std::string> data;
-    data.push_back("=== Sense HAT LED Matrix (sitara-sense-fb / /dev/fb1) ===");
+    data.push_back("=== Sense HAT LED Matrix (sense-fb / /dev/fb1) ===");
 
     bool fb1 = shPathExists("/dev/fb1");
-    data.push_back(fb1 ? "[PASS] /dev/fb1 (sitara-sense-fb framebuffer) present"
+    data.push_back(fb1 ? "[PASS] /dev/fb1 (sense-fb framebuffer) present"
                        : "[INFO] /dev/fb1 not found");
 
     // Try /dev/fb0 as fallback (single-display systems)

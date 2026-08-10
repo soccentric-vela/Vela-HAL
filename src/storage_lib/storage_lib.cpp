@@ -680,7 +680,7 @@ TestOutput StorageTesting::testEmmcTemperatureMonitoring()
     long long socTempMC = storReadInt("/sys/class/thermal/thermal_zone0/temp");
     if (socTempMC > 0) {
         double socC = socTempMC / 1000.0;
-        data.push_back("Sitara AM62x/AM64x SoC temperature: " + std::to_string(socC) + " °C");
+        data.push_back("Qualcomm QCS6490 SoC temperature: " + std::to_string(socC) + " °C");
         if (socC > 80.0) {
             passed = false;
             data.push_back("WARNING: SoC temperature above 80°C — may affect storage.");
@@ -741,7 +741,7 @@ TestOutput StorageTesting::testNvmeSsdDetection()
 
     if (!nvmeDev && !nvmeSysfs) {
         data.push_back("INFO: No NVMe detected. Install NVMe in PCIe M.2 slot and enable:");
-        data.push_back("      dtparam=pciex1_gen=3  in /boot/firmware/config.txt");
+        data.push_back("      dtparam=pciex1_gen=3  in /boot/firmware/extlinux.conf");
         data.push_back("      Reboot required after config change.");
         // Not a hard failure — NVMe is optional on Vela
         {
@@ -947,7 +947,7 @@ TestOutput StorageTesting::testHotplugCapability()
     data.push_back("udevadm (hotplug manager): " + std::string(udevPresent ? "present" : "not found"));
 
     // NVMe hotplug: PCIe Gen3 on Vela does not support native hotplug
-    data.push_back("INFO: Vela NVMe/PCIe does not support hot-plug in PRU-ICSS implementation.");
+    data.push_back("INFO: Vela NVMe/PCIe does not support hot-plug in Hexagon DSP implementation.");
     data.push_back("      SD card supports software-initiated remove/insert detection.");
 
     {
@@ -984,7 +984,7 @@ TestOutput StorageTesting::testStorageEncryptionSupport()
     if (!luksDevs.empty()) data.push_back("Active LUKS/encrypted volumes: " + luksDevs);
     else data.push_back("Active LUKS volumes: none detected");
 
-    // Check hardware AES (Sitara AM62x/AM64x Cortex-A76 has AES-NI equivalent)
+    // Check hardware AES (Qualcomm QCS6490 Kryo has AES-NI equivalent)
     std::string cpuAes = storRunCmd("grep -m1 aes /proc/cpuinfo 2>/dev/null");
     if (!cpuAes.empty()) data.push_back("CPU AES acceleration: " + cpuAes);
 
@@ -996,7 +996,7 @@ TestOutput StorageTesting::testStorageEncryptionSupport()
     bool tpmPresent = pathExists("/dev/tpm0") || pathExists("/dev/tpmrm0");
     data.push_back("TPM device: " + std::string(tpmPresent ? "present" : "not found (Vela has no onboard TPM)"));
 
-    data.push_back("NOTE: Vela Sitara AM62x/AM64x provides AES via ARMv8 crypto extensions.");
+    data.push_back("NOTE: Vela Qualcomm QCS6490 provides AES via ARMv8 crypto extensions.");
     data.push_back("      Full disk encryption requires LUKS2 + cryptsetup on Pi OS.");
 
     if (!cryptSetup && dmCrypt.empty()) {

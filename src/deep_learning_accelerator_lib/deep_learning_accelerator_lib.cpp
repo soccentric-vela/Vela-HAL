@@ -1,13 +1,13 @@
 /**
  * @file deep_learning_accelerator_lib.cpp
  * @brief Implementation file for DeepLearningAcceleratorTesting class
- *        Targets Vela Platform (Sitara AM62x/AM64x / PRU-ICSS).
+ *        Targets Vela Platform (Qualcomm QCS6490 / Hexagon DSP).
  *        The Pi 5 has no on-die DLA; AI acceleration is provided by optional
  *        add-on hardware:
  *          - Hailo-8 (PCIe M.2 / HAT): /dev/hailo0, 26 INT8 TOPS
  *          - Coral USB Accelerator (Edge TPU): USB vendor 18d1, 4 INT8 TOPS
  *        All mathematical correctness tests (convolution, BN, activation, …)
- *        run in software on the Cortex-A76 CPU.
+ *        run in software on the Kryo CPU.
  * @author sandesh ghimire
  * @copyright (C) Soccentric LLC */
 
@@ -380,7 +380,7 @@ TestOutput DeepLearningAcceleratorTesting::testDlaClockFrequency()
     bool passed = true;
 
     data.push_back("Hailo-8 internal DSP clock: ~700 MHz (not directly readable via sysfs)");
-    data.push_back("PCIe Gen3 x1 link speed: ~1 GB/s (Vela PRU-ICSS PCIe bridge)");
+    data.push_back("PCIe Gen3 x1 link speed: ~1 GB/s (Vela Hexagon DSP PCIe bridge)");
 
     // Check Hailo PCIe device presence
     bool hailoDev = pathExists(HAILO8_DEV);

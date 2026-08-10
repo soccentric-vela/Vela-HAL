@@ -120,7 +120,7 @@ UsbTesting::~UsbTesting()
 
 /**
  * @brief Test USB host mode by verifying xHCI host controller presence on Vela.
- * @details Checks for xhci-hcd (PRU-ICSS USB host) driver binding in
+ * @details Checks for xhci-hcd (Hexagon DSP USB host) driver binding in
  *          /sys/bus/platform/drivers/xhci-hcd and scans USB root hubs
  *          (usb1, usb2, …) exposed under /sys/bus/usb/devices/.
  * @return TestOutput with pass/fail and diagnostic data

@@ -254,8 +254,8 @@ TestOutput SystemMemoryTesting::testMemoryClockFrequency()
         }
     }
 
-    // Sitara AM62x/AM64x memory controller speed is fixed at boot from firmware
-    data.push_back("Memory controller: Sitara AM62x/AM64x (fixed at LPDDR4X-4267 by firmware)");
+    // Qualcomm QCS6490 memory controller speed is fixed at boot from firmware
+    data.push_back("Memory controller: Qualcomm QCS6490 (fixed at LPDDR4X-4267 by firmware)");
     data.push_back("PASS: LPDDR4X clock frequency confirmed at spec: 4267 MT/s.");
     {
         TestOutput _out;
@@ -359,7 +359,7 @@ TestOutput SystemMemoryTesting::testMemoryErrorCorrection()
 
     data.push_back("Memory error correction status for Vela");
     data.push_back("Vela LPDDR4X-4267: NO hardware ECC support.");
-    data.push_back("Sitara AM62x/AM64x memory controller does not implement ECC on LPDDR4X.");
+    data.push_back("Qualcomm QCS6490 memory controller does not implement ECC on LPDDR4X.");
 
     // Check if EDAC module is loaded
     std::string edac = memReadFile("/sys/bus/platform/drivers/edac");
@@ -731,9 +731,9 @@ TestOutput SystemMemoryTesting::testDmaTofromMemory()
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("DMA subsystem check (Vela Sitara AM62x/AM64x DMA controller)");
+    data.push_back("DMA subsystem check (Vela Qualcomm QCS6490 DMA controller)");
 
-    // Check DMA channels exposed by Sitara AM62x/AM64x
+    // Check DMA channels exposed by Qualcomm QCS6490
     bool dmaPresent = false;
     for (int i = 0; i < 11; ++i) {
         std::string path = "/sys/bus/platform/devices/10000000.dma/dma/dma" + std::to_string(i) + "chan0";

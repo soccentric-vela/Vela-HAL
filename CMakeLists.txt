@@ -159,7 +159,7 @@ set(CPACK_DEBIAN_PACKAGE_PRIORITY    "optional")
 set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${HAL_DEB_ARCH}")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS     "libstdc++6 (>= 10), libgcc-s1")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION [[Vela HAL provides a C++17 hardware abstraction layer for the
-Vela Platform (Sitara AM62x/AM64x / PRU-ICSS) exposing 35 hardware modules via a
+Vela Platform (Qualcomm QCS6490 / Hexagon DSP) exposing 35 hardware modules via a
 canonical API and a gRPC/Protobuf service interface.]])
 set(CPACK_DEBIAN_COMPRESSION_TYPE    "gzip")
 set(CPACK_DEBIAN_FILE_NAME           "DEB-DEFAULT")

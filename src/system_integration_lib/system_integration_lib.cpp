@@ -78,7 +78,7 @@ SystemIntegrationTesting::~SystemIntegrationTesting()
 TestOutput SystemIntegrationTesting::testConcurrentOperationOfAllSubsystems()
 {
     std::vector<std::string> data;
-    data.push_back("=== Concurrent Subsystem Operation (Vela Sitara AM62x/AM64x) ===");
+    data.push_back("=== Concurrent Subsystem Operation (Vela Qualcomm QCS6490) ===");
 
     // Start background stress on all 4 cores for 3 s (non-blocking)
     bool stressOk = system("stress-ng --cpu 4 --timeout 3s --quiet 2>/dev/null &") == 0;
@@ -255,7 +255,7 @@ TestOutput SystemIntegrationTesting::testEndtoendLatency()
 TestOutput SystemIntegrationTesting::testSystemThroughput()
 {
     std::vector<std::string> data;
-    data.push_back("=== System Throughput (Vela Sitara AM62x/AM64x) ===");
+    data.push_back("=== System Throughput (Vela Qualcomm QCS6490) ===");
 
     // Memory bandwidth: 128 MB copy
     static constexpr size_t MB128 = 128ULL * 1024 * 1024;
@@ -293,7 +293,7 @@ TestOutput SystemIntegrationTesting::testSystemThroughput()
 /**
  * @brief Test multimodal AI workload on Vela (TFLite + libcamera + ALSA).
  * @details Vela has no dedicated AI accelerator.  TFLite with XNNPACK uses
- *          NEON SIMD on the Cortex-A76.  Hailo-8 HAT adds 26 TOPS.
+ *          NEON SIMD on the Kryo.  Hailo-8 HAT adds 26 TOPS.
  */
 TestOutput SystemIntegrationTesting::testMultimodalAiWorkloads()
 {
@@ -308,7 +308,7 @@ TestOutput SystemIntegrationTesting::testMultimodalAiWorkloads()
     // Hailo-8 HAT
     bool hailoPresent = siPathExists("/dev/hailo0");
     data.push_back(hailoPresent ? "[PASS] Hailo-8 accelerator /dev/hailo0 present (26 TOPS)"
-                                : "[INFO] No Hailo-8 HAT (run on Cortex-A76 NEON)");
+                                : "[INFO] No Hailo-8 HAT (run on Kryo NEON)");
 
     // OpenCV
     std::string ocv = siRunCmd("python3 -c 'import cv2; print(cv2.__version__)' 2>/dev/null");

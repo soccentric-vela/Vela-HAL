@@ -7,7 +7,7 @@
  *   DC-DC        : 5V / 5A synchronous buck on HAT, feeds Pi via GPIO header
  *   Fan ctrl     : ATtiny on I2C @ 0x1A (Vela PoE HAT), sysfs fan node
  *   Power sense  : Optional INA219/INA226 on I2C (third-party HATs)
- *   Eth link     : Vela GbE (Sitara AM62x/AM64x MAC + BCM54213PE PHY) — PoE on eth0
+ *   Eth link     : Vela GbE (Qualcomm QCS6490 MAC + BCM54213PE PHY) — PoE on eth0
  *
  * Tests use hwmon sysfs, I2C tools, ethtool, ti-syscmd, and thermal sysfs.
  * @author sandesh ghimire
@@ -267,7 +267,7 @@ TestOutput PoeHatTesting::testFanControl()
         else
         {
             data.push_back("[INFO] No PoE HAT fan control found in hwmon or thermal cooling devices");
-            data.push_back("[INFO] Ensure dtoverlay=sitara-poe-fan is in /boot/firmware/config.txt");
+            data.push_back("[INFO] Ensure dtoverlay=sitara-poe-fan is in /boot/firmware/extlinux.conf");
         }
     }
 

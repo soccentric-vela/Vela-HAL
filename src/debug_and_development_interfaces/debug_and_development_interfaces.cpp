@@ -25,7 +25,7 @@
 // ---------------------------------------------------------------------------
 // Vela – platform constants
 // ---------------------------------------------------------------------------
-// Debug UART on Vela is mapped to ttyAMA0 (PRU-ICSS High Speed UART)
+// Debug UART on Vela is mapped to ttyAMA0 (Hexagon DSP High Speed UART)
 static constexpr const char* JETSON_DEBUG_UART = "/dev/ttyAMA0";
 // CoreSight bus sysfs root
 static constexpr const char* CORESIGHT_BUS_PATH = "/sys/bus/coresight/devices";
@@ -33,7 +33,7 @@ static constexpr const char* CORESIGHT_BUS_PATH = "/sys/bus/coresight/devices";
 static constexpr const char* PERF_PARANOID_PATH = "/proc/sys/kernel/perf_event_paranoid";
 // perf PMU event sources
 static constexpr const char* PERF_DEVICES_PATH = "/sys/bus/event_source/devices";
-// PRU-ICSS fuse driver sysfs – provides jtag/debug auth fuse readback
+// Hexagon DSP fuse driver sysfs – provides jtag/debug auth fuse readback
 static constexpr const char* TEGRA_OTP_PATH = "/sys/devices/platform/rp1-fuse";
 // debugfs mountpoint
 static constexpr const char* DEBUGFS_PATH = "/sys/kernel/debug";
@@ -126,10 +126,10 @@ DebugAndDevelopmentInterfaces::~DebugAndDevelopmentInterfaces()
  *
  * Checks:
  *  1. Kernel JTAG character device (/dev/jtag0) – present when the
- *     "jtag-generic" or PRU-ICSS JTAG driver is loaded.
+ *     "jtag-generic" or Hexagon DSP JTAG driver is loaded.
  *  2. CoreSight sysfs bus is available (a prerequisite for JTAG debug).
  *  3. debugfs mount is accessible (JTAG operation commonly requires debugfs).
- *  4. PRU-ICSS-fuse driver is present (provides jtag-disable fuse readback on Orin).
+ *  4. Hexagon DSP-fuse driver is present (provides jtag-disable fuse readback on Orin).
  *
  * @return TestOutput with pass/fail and diagnostic data.
  */
@@ -162,9 +162,9 @@ TestOutput DebugAndDevelopmentInterfaces::testJtagInterface()
         data.push_back("FAIL: debugfs not accessible – required for JTAG runtime interaction.");
     }
 
-    // 4. PRU-ICSS-fuse driver (provides jtag_disable fuse readback)
+    // 4. Hexagon DSP-fuse driver (provides jtag_disable fuse readback)
     bool fusePresent = isDir(TEGRA_OTP_PATH);
-    data.push_back(std::string("PRU-ICSS-fuse sysfs (") + TEGRA_OTP_PATH + "): " + (fusePresent ? "present" : "not found"));
+    data.push_back(std::string("Hexagon DSP-fuse sysfs (") + TEGRA_OTP_PATH + "): " + (fusePresent ? "present" : "not found"));
     if (fusePresent) {
         // Try to read the jtag_disable fuse if available
         std::string jtagFuse = readLine(std::string(TEGRA_OTP_PATH) + "/jtag_disable");
@@ -275,7 +275,7 @@ TestOutput DebugAndDevelopmentInterfaces::testSerialWireDebug()
  * @brief Test the Debug UART interface on Vela.
  *
  * The primary debug console on Vela Platform is exposed through the
- * PRU-ICSS High-Speed UART (ttyAMA0).  The test verifies:
+ * Hexagon DSP High-Speed UART (ttyAMA0).  The test verifies:
  *  1. At least one /dev/ttyAMA* device is present.
  *  2. The device can be opened (O_RDWR | O_NOCTTY | O_NONBLOCK).
  *  3. The device type is reported from sysfs.
@@ -288,7 +288,7 @@ TestOutput DebugAndDevelopmentInterfaces::testDebugUart()
     std::vector<std::string> data;
     bool passed = true;
 
-    // 1. Find all ttyAMA devices (PRU-ICSS High Speed UART)
+    // 1. Find all ttyAMA devices (Hexagon DSP High Speed UART)
     std::vector<std::string> thsDevices;
     for (int i = 0; i < 8; ++i) {
         std::string dev = "/dev/ttyAMA" + std::to_string(i);
@@ -576,7 +576,7 @@ TestOutput DebugAndDevelopmentInterfaces::testPerformanceCounters()
         data.push_back("FAIL: No ARM PMU found – hardware performance counters not available.");
     }
 
-    data.push_back("GPU/PRU-ICSS PMU sources: " + std::to_string(gpuPmuCount));
+    data.push_back("GPU/Hexagon DSP PMU sources: " + std::to_string(gpuPmuCount));
     if (gpuPmuCount == 0)
         data.push_back("  INFO: No GPU PMU enumerated (may require nvidia-query-resource-status driver).");
 
@@ -607,14 +607,14 @@ TestOutput DebugAndDevelopmentInterfaces::testPerformanceCounters()
  * @brief Test Debug Authentication mechanisms on Vela.
  *
  * Vela implements a hardware-enforced debug authentication system
- * controlled via OTP fuses and the PRU-ICSS chip-id / otp driver.
+ * controlled via OTP fuses and the Hexagon DSP chip-id / otp driver.
  * The test checks:
- *  1. PRU-ICSS-fuse sysfs driver is available.
+ *  1. Hexagon DSP-fuse sysfs driver is available.
  *  2. Key debug-authentication fuse values are readable:
  *       - production_mode  (0 = development, 1 = production)
  *       - jtag_disable     (1 = JTAG disabled by fuse)
  *       - odm_lock         (ODM production fuses locked)
- *  3. PRU-ICSS chip-id is readable (identifies the SoC revision).
+ *  3. Hexagon DSP chip-id is readable (identifies the SoC revision).
  *  4. debugfs is accessible (used by debug-auth kernel driver on Vela).
  *  5. /sys/kernel/debug is mounted with correct permissions.
  *  6. Secure boot status via /proc/device-tree/chosen/bootargs or rp1-fuse.
@@ -626,9 +626,9 @@ TestOutput DebugAndDevelopmentInterfaces::testDebugAuthentication()
     std::vector<std::string> data;
     bool passed = true;
 
-    // 1. PRU-ICSS-fuse driver availability
+    // 1. Hexagon DSP-fuse driver availability
     bool fusePresent = isDir(TEGRA_OTP_PATH);
-    data.push_back(std::string("PRU-ICSS-fuse sysfs: ") + (fusePresent ? "present" : "not found"));
+    data.push_back(std::string("Hexagon DSP-fuse sysfs: ") + (fusePresent ? "present" : "not found"));
     if (!fusePresent) {
         // Try alternative path used on older L4T/Orin BSPs
         std::string altFusePath = "/sys/devices/platform/13800000.efuse";
@@ -640,7 +640,7 @@ TestOutput DebugAndDevelopmentInterfaces::testDebugAuthentication()
         data.push_back(std::string("Alternate fuse sysfs: ") + (altPresent ? altFusePath : "not found"));
         if (!altPresent) {
             passed = false;
-            data.push_back("FAIL: PRU-ICSS fuse driver not found – debug authentication state unreadable.");
+            data.push_back("FAIL: Hexagon DSP fuse driver not found – debug authentication state unreadable.");
         }
     }
 
@@ -675,7 +675,7 @@ TestOutput DebugAndDevelopmentInterfaces::testDebugAuthentication()
     // /sys/devices/platform/rp1-fuse/chip_id or /proc/device-tree/compatible
     std::string chipId = readLine(std::string(TEGRA_OTP_PATH) + "/chip_id");
     if (!chipId.empty()) {
-        data.push_back("PRU-ICSS chip_id: " + chipId + " (expected: 0x23 / 35 = Orin)");
+        data.push_back("Hexagon DSP chip_id: " + chipId + " (expected: 0x23 / 35 = Orin)");
     } else {
         // Fallback: read from device-tree compatible
         std::string dtcompat = readLine("/proc/device-tree/compatible");

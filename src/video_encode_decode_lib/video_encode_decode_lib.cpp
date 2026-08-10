@@ -3,7 +3,7 @@
  * @brief Implementation file for VideoEncodeDecodeTesting class – Vela Platform
  * @author sandesh ghimire
  * @copyright (C) Soccentric LLC *
- * Vela video codec hardware specifications (Sitara AM62x/AM64x VPU / PRU-ICSS):
+ * Vela video codec hardware specifications (Qualcomm QCS6490 VPU / Hexagon DSP):
  *   sitara_compatible-codec (V4L2 M2M firmware codec via VPU):
  *     - H.264 encode up to 1920×1080 @ 60 fps
  *     - H.264 decode up to 1920×1080 @ 60 fps

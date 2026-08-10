@@ -4,8 +4,8 @@
  *
  * Hardware: Vela Camera Module 3 connected to the CSI-2 connector.
  *   Sensor    : Sony IMX708 12.3 MP, 1/2.43", PDAF, HDR
- *   Interface : MIPI CSI-2 2-lane → PRU-ICSS Unicam → sitara_compatible-isp
- *   Driver    : unicam (V4L2 capture), sitara_compatible-isp (V4L2 m2m ISP)
+ *   Interface : MIPI CSI-2 2-lane → Hexagon DSP Unicam → qcom-camss
+ *   Driver    : unicam (V4L2 capture), qcom-camss (V4L2 m2m ISP)
  *   libcamera : Vela pipeline with autofocus (VCM actuator) and HDR support
  *
  * Tests use V4L2 sysfs, libcamera CLI tools, media-ctl, and dmesg.
@@ -95,7 +95,7 @@ TestOutput CameraModule3Testing::testCameraDetection()
 
     // Unicam sysfs
     bool unicam = cm3PathExists(VELA_QCS6490_UNICAM_PATH);
-    data.push_back(unicam ? "[PASS] PRU-ICSS Unicam sysfs entry present"
+    data.push_back(unicam ? "[PASS] Hexagon DSP Unicam sysfs entry present"
                           : "[INFO] Unicam sysfs not found");
 
     {
@@ -214,7 +214,7 @@ TestOutput CameraModule3Testing::testHdrMode()
     if (!hdrTest.empty())
         data.push_back("[INFO] HDR capture output: " + hdrTest);
 
-    data.push_back("[INFO] HDR tonemapping done in sitara_compatible-isp (not on-sensor)");
+    data.push_back("[INFO] HDR tonemapping done in qcom-camss (not on-sensor)");
     {
         TestOutput _out;
         _out.status = hal::Status::PASS;
@@ -258,13 +258,13 @@ TestOutput CameraModule3Testing::testStillCapture()
 }
 
 /**
- * @brief Verify the MIPI CSI-2 interface via PRU-ICSS Unicam kernel messages.
+ * @brief Verify the MIPI CSI-2 interface via Hexagon DSP Unicam kernel messages.
  */
 TestOutput CameraModule3Testing::testMipiCsiInterface()
 {
     std::vector<std::string> data;
-    data.push_back("=== Camera Module 3 MIPI CSI-2 Interface (PRU-ICSS Unicam) ===");
-    data.push_back("[INFO] Vela CSI connector: 22-pin FFC → PRU-ICSS 1f00110000.csi");
+    data.push_back("=== Camera Module 3 MIPI CSI-2 Interface (Hexagon DSP Unicam) ===");
+    data.push_back("[INFO] Vela CSI connector: 22-pin FFC → Hexagon DSP 1f00110000.csi");
     data.push_back("[INFO] D-PHY 2-lane @ up to 1.5 Gbps/lane → ISP pipeline");
 
     bool unicam = cm3PathExists(VELA_QCS6490_UNICAM_PATH);
@@ -275,11 +275,11 @@ TestOutput CameraModule3Testing::testMipiCsiInterface()
     if (!dmesgUni.empty())
         data.push_back("[INFO] dmesg unicam/csi:\n" + dmesgUni);
 
-    // Check sitara_compatible-isp module
+    // Check qcom-camss module
     std::string ispMod = cm3RunCmd("grep -c 'sitara_compatible.isp' /proc/modules 2>/dev/null");
     data.push_back(!ispMod.empty() && ispMod != "0"
-        ? "[PASS] sitara_compatible-isp module loaded"
-        : "[INFO] sitara_compatible-isp not in /proc/modules");
+        ? "[PASS] qcom-camss module loaded"
+        : "[INFO] qcom-camss not in /proc/modules");
 
     {
         TestOutput _out;

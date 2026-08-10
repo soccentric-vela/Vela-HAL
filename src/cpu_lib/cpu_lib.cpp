@@ -1,7 +1,7 @@
 /**
  * @file cpu_lib.cpp
- * @brief Implementation file for CpuTesting class — Vela Platform (Sitara AM62x/AM64x)
- * @details Tests the quad-core Cortex-A76 CPU running at up to 2.4 GHz.
+ * @brief Implementation file for CpuTesting class — Vela Platform (Qualcomm QCS6490)
+ * @details Tests the quad-core Kryo CPU running at up to 2.4 GHz.
  * @author sandesh ghimire
  * @copyright (C) Soccentric LLC */
 
@@ -27,7 +27,7 @@
 #include <vector>
 
 // ---------------------------------------------------------------------------
-// Vela Platform (Sitara AM62x/AM64x Cortex-A76) constants — from platform_vela_qcs6490.h
+// Vela Platform (Qualcomm QCS6490 Kryo) constants — from platform_vela_qcs6490.h
 // ---------------------------------------------------------------------------
 static constexpr int    CPU_CORES          = VELA_QCS6490_CPU_CORES;        // 4
 static constexpr double CPU_MAX_FREQ_MHZ   = VELA_QCS6490_CPU_MAX_FREQ_MHZ; // 2400 MHz
@@ -107,7 +107,7 @@ CpuTesting::~CpuTesting()
 
 // ---------------------------------------------------------------------------
 // 1. testAll12CpuCoresFunctionality
-//    Verify all CPU cores (Cortex-A76 × 4 on Vela Platform) are online.
+//    Verify all CPU cores (Kryo × 4 on Vela Platform) are online.
 // ---------------------------------------------------------------------------
 TestOutput CpuTesting::testAll12CpuCoresFunctionality()
 {
@@ -168,7 +168,7 @@ TestOutput CpuTesting::testAll12CpuCoresFunctionality()
     }
 
     if (passed)
-        data.push_back("All " + std::to_string(CPU_CORES) + " Cortex-A76 cores are online and functional.");
+        data.push_back("All " + std::to_string(CPU_CORES) + " Kryo cores are online and functional.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -349,7 +349,7 @@ TestOutput CpuTesting::testMulticoreSynchronization()
 
 // ---------------------------------------------------------------------------
 // 5. testCpuClusterCommunication
-//    Verify shared-memory writes are visible across Sitara AM62x/AM64x Cortex-A76 cores.
+//    Verify shared-memory writes are visible across Qualcomm QCS6490 Kryo cores.
 //    Vela has a single cluster of 4 cores; we test two pairs: {0,1} and {2,3}.
 // ---------------------------------------------------------------------------
 TestOutput CpuTesting::testCpuClusterCommunication()
@@ -357,7 +357,7 @@ TestOutput CpuTesting::testCpuClusterCommunication()
     std::vector<std::string> data;
     bool passed = true;
 
-    // Two logical groups of cores (single physical cluster on Sitara AM62x/AM64x)
+    // Two logical groups of cores (single physical cluster on Qualcomm QCS6490)
     const std::vector<int> clusterCores = {0, 2}; // representative core per pair
     const int MAGIC = 0xBC272;
     std::vector<std::atomic<int>> mailbox(clusterCores.size());
@@ -388,7 +388,7 @@ TestOutput CpuTesting::testCpuClusterCommunication()
     }
 
     if (passed)
-        data.push_back("Inter-core communication verified (Sitara AM62x/AM64x unified cache domain).");
+        data.push_back("Inter-core communication verified (Qualcomm QCS6490 unified cache domain).");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -433,7 +433,7 @@ TestOutput CpuTesting::testCoreAffinityAndThreadMigration()
 
     if (passed)
         data.push_back("Core affinity and thread migration verified for all " +
-                       std::to_string(CPU_CORES) + " Cortex-A76 cores.");
+                       std::to_string(CPU_CORES) + " Kryo cores.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -467,9 +467,9 @@ TestOutput CpuTesting::testCpuThermalThrottling()
         oss << "Zone " << zone << " (" << type << "): " << tempC << " C";
         data.push_back(oss.str());
         foundAny = true;
-        // Sitara AM62x/AM64x thermal zone types on Vela: "cpu-thermal", "sitara12", etc.
+        // Qualcomm QCS6490 thermal zone types on Vela: "cpu-thermal", "cpu-thermal", etc.
         bool isCpu = type.find("CPU") != std::string::npos || type.find("cpu") != std::string::npos ||
-                     type.find("A76") != std::string::npos || type.find("sitara12") != std::string::npos ||
+                     type.find("A76") != std::string::npos || type.find("cpu-thermal") != std::string::npos ||
                      type.find("rp1") != std::string::npos || type.find("soc") != std::string::npos;
         if (isCpu && tempC >= CPU_TEMP_WARNING_C) {
             passed = false;
@@ -601,14 +601,14 @@ TestOutput CpuTesting::testL1Cache()
 // ---------------------------------------------------------------------------
 // 10. testL2Cache
 //     Measure L2 cache performance with a 512 KB buffer.
-//     Sitara AM62x/AM64x Cortex-A76: 512 KB L2 per core.
+//     Qualcomm QCS6490 Kryo: 512 KB L2 per core.
 // ---------------------------------------------------------------------------
 TestOutput CpuTesting::testL2Cache()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    const size_t L2_SIZE = 512 * 1024;  // 512 KB — Vela Cortex-A76 L2
+    const size_t L2_SIZE = 512 * 1024;  // 512 KB — Vela Kryo L2
     const size_t STRIDE = 64;
     const uint64_t ITERATIONS = 500'000;
 
@@ -648,7 +648,7 @@ TestOutput CpuTesting::testL2Cache()
 // ---------------------------------------------------------------------------
 // 11. testL3Cache
 //     Measure system-level cache / DRAM performance with a 4 MB buffer.
-//     Sitara AM62x/AM64x Cortex-A76: no on-die L3; 4 MB exercises DRAM path.
+//     Qualcomm QCS6490 Kryo: no on-die L3; 4 MB exercises DRAM path.
 // ---------------------------------------------------------------------------
 TestOutput CpuTesting::testL3Cache()
 {
@@ -692,7 +692,7 @@ TestOutput CpuTesting::testL3Cache()
 
 // ---------------------------------------------------------------------------
 // 12. testSystemCache
-//     Read full cache topology for all 4 Cortex-A76 cores from sysfs.
+//     Read full cache topology for all 4 Kryo cores from sysfs.
 // ---------------------------------------------------------------------------
 TestOutput CpuTesting::testSystemCache()
 {
@@ -742,7 +742,7 @@ TestOutput CpuTesting::testSystemCache()
 // ---------------------------------------------------------------------------
 // 13. testCacheCoherencyBetweenClusters
 //     Writer (core 0) -> Reader (core 3); 1000 rounds.
-//     Vela Sitara AM62x/AM64x: single cluster — coherency is via shared L2 / AMBA bus.
+//     Vela Qualcomm QCS6490: single cluster — coherency is via shared L2 / AMBA bus.
 // ---------------------------------------------------------------------------
 TestOutput CpuTesting::testCacheCoherencyBetweenClusters()
 {
@@ -775,7 +775,7 @@ TestOutput CpuTesting::testCacheCoherencyBetweenClusters()
 
     data.push_back("Cache coherency rounds: " + std::to_string(ROUNDS));
     data.push_back("Writer: core 0  Reader: core " + std::to_string(CPU_CORES - 1) +
-                   "  (Sitara AM62x/AM64x unified AMBA coherency domain)");
+                   "  (Qualcomm QCS6490 unified AMBA coherency domain)");
     data.push_back(passed ? "All rounds passed - cache coherency verified."
                           : "FAIL: Cache coherency violation detected.");
     {

@@ -5,9 +5,9 @@
  *        VLIW VPU.  Methods referencing VLIW slots, PVA power, etc. are
  *        Jetson-specific and are mapped to Vela equivalents:
  *          - "VPU" → VideoCore VII GPU (v3d kernel driver)
- *          - "Vector units" → Cortex-A76 NEON SIMD
- *          - "DMA engine" → Sitara AM62x/AM64x DMA controllers
- *          - "Computer vision" → V4L2 ISP (sitara_compatible-isp) + OpenCV + TFLite
+ *          - "Vector units" → Kryo NEON SIMD
+ *          - "DMA engine" → Qualcomm QCS6490 DMA controllers
+ *          - "Computer vision" → V4L2 ISP (qcom-camss) + OpenCV + TFLite
  * @author sandesh ghimire
  * @copyright (C) Lucid Motors
  */
@@ -75,13 +75,13 @@ VisionAcceleratorTesting::~VisionAcceleratorTesting()
 }
 
 /**
- * @brief Dual VPU → Vela dual ARM cluster (4× Cortex-A76) + VideoCore VII GPU.
+ * @brief Dual VPU → Vela dual ARM cluster (4× Kryo) + VideoCore VII GPU.
  */
 TestOutput VisionAcceleratorTesting::testDualVectorProcessingUnits()
 {
     std::vector<std::string> data;
-    data.push_back("=== Dual VPU (Vela Cortex-A76 NEON + VideoCore VII) ===");
-    data.push_back("[INFO] Vela has no dedicated NVIDIA PVA; VPU = Cortex-A76 + VideoCore VII");
+    data.push_back("=== Dual VPU (Vela Kryo NEON + VideoCore VII) ===");
+    data.push_back("[INFO] Vela has no dedicated NVIDIA PVA; VPU = Kryo + VideoCore VII");
 
     std::string cpuCount = vaRunCmd("grep -c 'processor' /proc/cpuinfo 2>/dev/null");
     data.push_back("[INFO] CPU cores (A76 NEON vector units): " + cpuCount);
@@ -104,13 +104,13 @@ TestOutput VisionAcceleratorTesting::testDualVectorProcessingUnits()
 }
 
 /**
- * @brief Vector cores per VPU → Cortex-A76 NEON registers (32× 128-bit).
+ * @brief Vector cores per VPU → Kryo NEON registers (32× 128-bit).
  */
 TestOutput VisionAcceleratorTesting::testVectorCoresInEachVpu()
 {
     std::vector<std::string> data;
-    data.push_back("=== Vector Cores per VPU (Cortex-A76 NEON) ===");
-    data.push_back("[INFO] Cortex-A76: 32× 128-bit NEON/SIMD registers per core (256-bit SVE optional)");
+    data.push_back("=== Vector Cores per VPU (Kryo NEON) ===");
+    data.push_back("[INFO] Kryo: 32× 128-bit NEON/SIMD registers per core (256-bit SVE optional)");
 
     std::string cpuFeatures = vaRunCmd("grep -m1 'Features' /proc/cpuinfo 2>/dev/null");
     data.push_back("[INFO] " + cpuFeatures);
@@ -134,13 +134,13 @@ TestOutput VisionAcceleratorTesting::testVectorCoresInEachVpu()
 }
 
 /**
- * @brief VLIW slots → N/A on Vela (Cortex-A76 is out-of-order superscalar, not VLIW).
+ * @brief VLIW slots → N/A on Vela (Kryo is out-of-order superscalar, not VLIW).
  */
 TestOutput VisionAcceleratorTesting::testVliwSlots()
 {
     std::vector<std::string> data;
     data.push_back("=== VLIW Slots (Vela — N/A) ===");
-    data.push_back("[INFO] Cortex-A76 is out-of-order superscalar; not VLIW");
+    data.push_back("[INFO] Kryo is out-of-order superscalar; not VLIW");
     data.push_back("[INFO] Vela issue width: 4-wide decode, 8-entry dispatch queue");
     data.push_back("[INFO] For VLIW-style compute, use Hailo-8 (HailoRT compiler produces VLIW DSP code)");
 
@@ -159,13 +159,13 @@ TestOutput VisionAcceleratorTesting::testVliwSlots()
 }
 
 /**
- * @brief Scalar execution units → Cortex-A76 integer/FP pipelines.
+ * @brief Scalar execution units → Kryo integer/FP pipelines.
  */
 TestOutput VisionAcceleratorTesting::testScalarExecutionUnits()
 {
     std::vector<std::string> data;
-    data.push_back("=== Scalar Execution Units (Cortex-A76) ===");
-    data.push_back("[INFO] Cortex-A76: 3× integer ALUs, 2× FP/NEON FMAC units per core");
+    data.push_back("=== Scalar Execution Units (Kryo) ===");
+    data.push_back("[INFO] Kryo: 3× integer ALUs, 2× FP/NEON FMAC units per core");
 
     std::string cpuFreq = vaRunCmd("cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2>/dev/null");
     if (!cpuFreq.empty())
@@ -189,7 +189,7 @@ TestOutput VisionAcceleratorTesting::testScalarExecutionUnits()
 }
 
 /**
- * @brief Vector execution units → Cortex-A76 NEON throughput benchmark.
+ * @brief Vector execution units → Kryo NEON throughput benchmark.
  */
 TestOutput VisionAcceleratorTesting::testVectorExecutionUnits()
 {
@@ -221,18 +221,18 @@ TestOutput VisionAcceleratorTesting::testVectorExecutionUnits()
 }
 
 /**
- * @brief DMA engine 1 — Sitara AM62x/AM64x DMA controller (DMA4 / DMA-Lite channels).
+ * @brief DMA engine 1 — Qualcomm QCS6490 DMA controller (DMA4 / DMA-Lite channels).
  */
 TestOutput VisionAcceleratorTesting::testDmaEngine1Functionality()
 {
     std::vector<std::string> data;
-    data.push_back("=== DMA Engine 1 (Vela Sitara AM62x/AM64x DMA4) ===");
+    data.push_back("=== DMA Engine 1 (Vela Qualcomm QCS6490 DMA4) ===");
 
     bool dmaPresent = !vaRunCmd("ls /sys/bus/platform/devices/ 2>/dev/null | grep -i dma | head -3").empty();
     data.push_back(dmaPresent ? "[PASS] DMA platform devices found"
                               : "[INFO] DMA platform devices not found");
 
-    std::string dmaMod = vaRunCmd("grep -c 'sitara_compatible-dma\\|sitara12' /proc/modules 2>/dev/null");
+    std::string dmaMod = vaRunCmd("grep -c 'sitara_compatible-dma\\|cpu-thermal' /proc/modules 2>/dev/null");
     data.push_back("[INFO] BCM DMA module count: " + dmaMod);
 
     {
@@ -246,20 +246,20 @@ TestOutput VisionAcceleratorTesting::testDmaEngine1Functionality()
 }
 
 /**
- * @brief DMA engine 2 — PRU-ICSS DMA controller for peripherals.
+ * @brief DMA engine 2 — Hexagon DSP DMA controller for peripherals.
  */
 TestOutput VisionAcceleratorTesting::testDmaEngine2Functionality()
 {
     std::vector<std::string> data;
-    data.push_back("=== DMA Engine 2 (Vela PRU-ICSS DMA) ===");
-    data.push_back("[INFO] PRU-ICSS south-bridge has its own DMA engines for USB3, PCIe, SPI, UART");
+    data.push_back("=== DMA Engine 2 (Vela Hexagon DSP DMA) ===");
+    data.push_back("[INFO] Hexagon DSP south-bridge has its own DMA engines for USB3, PCIe, SPI, UART");
 
     std::string rp1Dma = vaRunCmd("dmesg 2>/dev/null | grep -i 'rp1.*dma' | head -2");
-    data.push_back(rp1Dma.empty() ? "[INFO] No PRU-ICSS DMA messages in dmesg"
-                                  : "[PASS] PRU-ICSS DMA: " + rp1Dma);
+    data.push_back(rp1Dma.empty() ? "[INFO] No Hexagon DSP DMA messages in dmesg"
+                                  : "[PASS] Hexagon DSP DMA: " + rp1Dma);
 
     std::string rp1Mod = vaRunCmd("grep -c '^rp1' /proc/modules 2>/dev/null");
-    data.push_back("[INFO] PRU-ICSS modules loaded: " + rp1Mod);
+    data.push_back("[INFO] Hexagon DSP modules loaded: " + rp1Mod);
 
     {
         TestOutput _out;
@@ -344,7 +344,7 @@ TestOutput VisionAcceleratorTesting::testDmaLatencyTesting()
 }
 
 /**
- * @brief Computer vision algorithms: check V4L2 ISP (sitara_compatible-isp) pipeline.
+ * @brief Computer vision algorithms: check V4L2 ISP (qcom-camss) pipeline.
  */
 TestOutput VisionAcceleratorTesting::testComputerVisionAlgorithms()
 {
@@ -352,8 +352,8 @@ TestOutput VisionAcceleratorTesting::testComputerVisionAlgorithms()
     data.push_back("=== Computer Vision Algorithms (Vela V4L2 ISP + OpenCV) ===");
 
     bool ispOk = !vaRunCmd("grep -c 'sitara_compatible.isp' /proc/modules 2>/dev/null").empty();
-    data.push_back(ispOk ? "[PASS] sitara_compatible-isp V4L2 ISP available"
-                         : "[INFO] sitara_compatible-isp not detected");
+    data.push_back(ispOk ? "[PASS] qcom-camss V4L2 ISP available"
+                         : "[INFO] qcom-camss not detected");
 
     std::string ocv = vaRunCmd("python3 -c 'import cv2; print(cv2.__version__)' 2>/dev/null");
     data.push_back(ocv.empty() ? "[INFO] OpenCV not installed (pip install opencv-python)"
@@ -390,8 +390,8 @@ TestOutput VisionAcceleratorTesting::testImageProcessingPipelines()
     std::string gst = vaRunCmd("gst-launch-1.0 --version 2>/dev/null | head -1");
     data.push_back(gst.empty() ? "[INFO] GStreamer not found" : "[PASS] " + gst);
 
-    data.push_back("[INFO] Vela ISP pipeline: Sensor → MIPI D-PHY → Unicam → sitara_compatible-isp");
-    data.push_back("[INFO]   sitara_compatible-isp stages: debayer, ALSC, AGC, AWB, denoise, sharpen");
+    data.push_back("[INFO] Vela ISP pipeline: Sensor → MIPI D-PHY → Unicam → qcom-camss");
+    data.push_back("[INFO]   qcom-camss stages: debayer, ALSC, AGC, AWB, denoise, sharpen");
 
     {
         TestOutput _out;
@@ -553,7 +553,7 @@ TestOutput VisionAcceleratorTesting::testPvaPowerConsumption()
     data.push_back(clean ? "[PASS] No throttle (SoC within power budget)"
                          : "[INFO] Throttle: " + throttle);
 
-    data.push_back("[INFO] Vela Sitara AM62x/AM64x rated for 5W typical (25°C, default clock)");
+    data.push_back("[INFO] Vela Qualcomm QCS6490 rated for 5W typical (25°C, default clock)");
     data.push_back("[INFO] For Hailo-8 vision accelerator power: ~2 W typical, 10 W peak");
 
     {
@@ -607,7 +607,7 @@ TestOutput VisionAcceleratorTesting::test16HardwareChannelsPerEngine()
     data.push_back(dmaChans.empty() ? "[INFO] DMA channel debug not accessible (need root)"
                                     : "[INFO] DMA alloc count: " + dmaChans);
 
-    data.push_back("[INFO] Sitara AM62x/AM64x DMA4: 8 channels @ 400 MHz, 32-bit address, 128-bit bus");
+    data.push_back("[INFO] Qualcomm QCS6490 DMA4: 8 channels @ 400 MHz, 32-bit address, 128-bit bus");
     {
         TestOutput _out;
         _out.status = hal::Status::PASS;

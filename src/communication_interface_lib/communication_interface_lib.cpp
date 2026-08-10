@@ -124,8 +124,8 @@ CommunicationInterfaceTesting::~CommunicationInterfaceTesting()
 // ===========================================================================
 
 /**
- * @brief Enumerate all PRU-ICSS UART (ttyAMA*) ports and verify they can be opened.
- * @details Vela exposes up to 4 PRU-ICSS High-Speed UART ports (ttyAMA0–3)
+ * @brief Enumerate all Hexagon DSP UART (ttyAMA*) ports and verify they can be opened.
+ * @details Vela exposes up to 4 Hexagon DSP High-Speed UART ports (ttyAMA0–3)
  *          plus an optional ttyAMA4.  We enumerate what is present and attempt
  *          a non-blocking open to confirm each device is accessible.
  * @return TestOutput with pass/fail and per-port status lines.
@@ -193,7 +193,7 @@ TestOutput CommunicationInterfaceTesting::testAllUartPortsFunctionality()
  *        by Vela UART controllers (up to 3.6 Mbaud).
  * @details Attempts to configure each detected ttyAMA port with standard baud
  *          rates (9600 → 921600) and checks that cfsetispeed / cfsetospeed
- *          succeed.  The actual hardware limit on PRU-ICSS UART is 1/16 of the
+ *          succeed.  The actual hardware limit on Hexagon DSP UART is 1/16 of the
  *          source clock; the test validates kernel-side symbol availability.
  * @return TestOutput with pass/fail and baud-rate test matrix.
  */
@@ -298,9 +298,9 @@ TestOutput CommunicationInterfaceTesting::testVariousBaudRates()
 }
 
 /**
- * @brief Verify hardware RTS/CTS flow control capability on PRU-ICSS UART ports.
+ * @brief Verify hardware RTS/CTS flow control capability on Hexagon DSP UART ports.
  * @details Checks that the CRTSCTS flag can be set in the termios control word.
- *          Vela PRU-ICSS UART supports hardware flow control on ttyAMA pins.
+ *          Vela Hexagon DSP UART supports hardware flow control on ttyAMA pins.
  * @return TestOutput with pass/fail and per-port flow-control status.
  */
 TestOutput CommunicationInterfaceTesting::testHardwareFlowControl()
@@ -374,7 +374,7 @@ TestOutput CommunicationInterfaceTesting::testHardwareFlowControl()
         close(fd);
     }
 
-    data.push_back("[INFO] Vela PRU-ICSS UART supports RTS/CTS on ttyAMA0–ttyAMA3");
+    data.push_back("[INFO] Vela Hexagon DSP UART supports RTS/CTS on ttyAMA0–ttyAMA3");
     {
         TestOutput _out;
         _out.status = allOk ? hal::Status::PASS : hal::Status::FAIL;
@@ -461,7 +461,7 @@ TestOutput CommunicationInterfaceTesting::testParityChecking()
     tcsetattr(fd, TCSANOW, &orig);
     close(fd);
 
-    data.push_back("[INFO] Vela PRU-ICSS UART supports 8N1, 8E1, 8O1, and 7-bit variants");
+    data.push_back("[INFO] Vela Hexagon DSP UART supports 8N1, 8E1, 8O1, and 7-bit variants");
     {
         TestOutput _out;
         _out.status = allOk ? hal::Status::PASS : hal::Status::FAIL;
@@ -540,7 +540,7 @@ TestOutput CommunicationInterfaceTesting::testStopBitConfiguration()
     tcsetattr(fd, TCSANOW, &orig);
     close(fd);
 
-    data.push_back("[INFO] Vela PRU-ICSS UART supports 1 and 2 stop bit configurations");
+    data.push_back("[INFO] Vela Hexagon DSP UART supports 1 and 2 stop bit configurations");
     {
         TestOutput _out;
         _out.status = allOk ? hal::Status::PASS : hal::Status::FAIL;
@@ -553,7 +553,7 @@ TestOutput CommunicationInterfaceTesting::testStopBitConfiguration()
 
 /**
  * @brief Verify UART DMA operation by checking DMA channel assignments in sysfs.
- * @details On Vela the PRU-ICSS UART controllers are DMA-capable via the
+ * @details On Vela the Hexagon DSP UART controllers are DMA-capable via the
  *          GPCDMA engine.  We probe /sys/bus/platform/devices/31d0000.serial
  *          (and siblings) for their DMA channel info in /proc/interrupts and
  *          device-tree DMA properties.
@@ -564,7 +564,7 @@ TestOutput CommunicationInterfaceTesting::testUartDmaOperation()
     std::vector<std::string> data;
     data.push_back("=== UART DMA Operation (Vela) ===");
 
-    // Vela PRU-ICSS UART controller base addresses in sysfs
+    // Vela Hexagon DSP UART controller base addresses in sysfs
     static const std::vector<std::string> uartBaseAddrs = {
         "3100000.serial", // ttyAMA0
         "3110000.serial", // ttyAMA1
@@ -609,7 +609,7 @@ TestOutput CommunicationInterfaceTesting::testUartDmaOperation()
     }
 
     if (foundControllers == 0) {
-        data.push_back("[INFO] No PRU-ICSS UART platform devices found – check kernel config");
+        data.push_back("[INFO] No Hexagon DSP UART platform devices found – check kernel config");
         data.push_back("[INFO] Expected at /sys/bus/platform/devices/3100000.serial etc.");
     } else {
         data.push_back("Summary: " + std::to_string(foundControllers) + " UART controllers found, " + std::to_string(dmaEnabled) +
@@ -628,7 +628,7 @@ TestOutput CommunicationInterfaceTesting::testUartDmaOperation()
 
 /**
  * @brief Check that UART interrupt lines are registered in /proc/interrupts.
- * @details Scans /proc/interrupts for PRU-ICSS UART (ttyAMA) interrupt entries.
+ * @details Scans /proc/interrupts for Hexagon DSP UART (ttyAMA) interrupt entries.
  *          A properly running Vela kernel will show serial3100000 etc.
  * @return TestOutput with pass/fail and interrupt table excerpt.
  */
@@ -657,7 +657,7 @@ TestOutput CommunicationInterfaceTesting::testUartInterruptHandling()
         data.push_back("[INFO] UART interrupt handlers are registered and active");
     }
 
-    data.push_back("[INFO] Vela PRU-ICSS UART uses level-triggered GIC interrupts");
+    data.push_back("[INFO] Vela Hexagon DSP UART uses level-triggered GIC interrupts");
     {
         TestOutput _out;
         _out.status = hal::Status::PASS;
@@ -807,7 +807,7 @@ TestOutput CommunicationInterfaceTesting::testAllSpiControllers()
 /**
  * @brief Verify SPI master mode operation via spidev ioctl.
  * @details Opens each /dev/spidev* node and queries the current SPI mode with
- *          SPI_IOC_RD_MODE.  On Vela the PRU-ICSS QSPI/SPI controllers
+ *          SPI_IOC_RD_MODE.  On Vela the Hexagon DSP QSPI/SPI controllers
  *          always operate in master mode.
  * @return TestOutput with pass/fail and per-device mode information.
  */
@@ -852,7 +852,7 @@ TestOutput CommunicationInterfaceTesting::testSpiMasterMode()
         close(fd);
     }
 
-    data.push_back("[INFO] Vela PRU-ICSS SPI/QSPI controllers support master mode only");
+    data.push_back("[INFO] Vela Hexagon DSP SPI/QSPI controllers support master mode only");
     {
         TestOutput _out;
         _out.status = allOk ? hal::Status::PASS : hal::Status::FAIL;
@@ -865,7 +865,7 @@ TestOutput CommunicationInterfaceTesting::testSpiMasterMode()
 
 /**
  * @brief Check SPI slave mode support on Vela.
- * @details The PRU-ICSS SPI controllers on Vela support slave mode when
+ * @details The Hexagon DSP SPI controllers on Vela support slave mode when
  *          configured in the device tree.  This test inspects DT and sysfs
  *          for slave-mode configuration.
  * @return TestOutput with pass/fail and slave mode capability information.
@@ -1004,7 +1004,7 @@ TestOutput CommunicationInterfaceTesting::testSpiModes()
 
     std::vector<std::string> spiDevs = listDevNodes("/dev", "spidev");
     if (spiDevs.empty()) {
-        data.push_back("[INFO] No spidev nodes; Vela PRU-ICSS SPI supports all 4 SPI modes");
+        data.push_back("[INFO] No spidev nodes; Vela Hexagon DSP SPI supports all 4 SPI modes");
         for (const auto& m : modes) {
             data.push_back("[INFO] " + m.first + ": supported by hardware");
         }
@@ -1066,7 +1066,7 @@ TestOutput CommunicationInterfaceTesting::testSpiModes()
 /**
  * @brief Test chip select (CS) line functionality on SPI controllers.
  * @details Enumerates CS lines from sysfs bus topology.
- *          Vela PRU-ICSS SPI supports up to 4 CS lines per controller.
+ *          Vela Hexagon DSP SPI supports up to 4 CS lines per controller.
  * @return TestOutput with pass/fail and CS enumeration.
  */
 TestOutput CommunicationInterfaceTesting::testChipSelectFunctionality()
@@ -1109,7 +1109,7 @@ TestOutput CommunicationInterfaceTesting::testChipSelectFunctionality()
         }
     }
 
-    data.push_back("[INFO] Vela PRU-ICSS SPI controllers support up to 4 CS lines each");
+    data.push_back("[INFO] Vela Hexagon DSP SPI controllers support up to 4 CS lines each");
     data.push_back("[INFO] CS polarity configurable via spi-cs-high DT property");
 
     bool passed = (!spiDevs.empty() || !sysBusDevs.empty());
@@ -1166,7 +1166,7 @@ TestOutput CommunicationInterfaceTesting::testSpiDmaTransfers()
 
     if (dmaCount == 0) {
         data.push_back("[INFO] SPI DMA not detected via DT; driver may use auto-threshold DMA");
-        data.push_back("[INFO] Vela PRU-ICSS SPI uses DMA for transfers > 64 bytes");
+        data.push_back("[INFO] Vela Hexagon DSP SPI uses DMA for transfers > 64 bytes");
     }
 
     {
@@ -1344,7 +1344,7 @@ TestOutput CommunicationInterfaceTesting::testI2cMasterMode()
         close(fd);
     }
 
-    data.push_back("[INFO] Vela I2C controllers (PRU-ICSS194/Sitara AM62x/AM64x) are master-only by default");
+    data.push_back("[INFO] Vela I2C controllers (Hexagon DSP194/Qualcomm QCS6490) are master-only by default");
     {
         TestOutput _out;
         _out.status = allOk ? hal::Status::PASS : hal::Status::FAIL;
@@ -1457,7 +1457,7 @@ TestOutput CommunicationInterfaceTesting::testStandardMode()
             data.push_back("[INFO] No I2C devices; Vela I2C supports 100 kHz standard mode");
         } else {
             data.push_back("[PASS] " + std::to_string(i2cDevs.size()) +
-                           " I2C bus(es) present; standard mode 100 kHz supported by PRU-ICSS I2C");
+                           " I2C bus(es) present; standard mode 100 kHz supported by Hexagon DSP I2C");
         }
     }
 
@@ -1505,7 +1505,7 @@ TestOutput CommunicationInterfaceTesting::testFastMode()
     }
 
     if (!found) {
-        data.push_back("[INFO] Vela PRU-ICSS I2C controllers support 400 kHz Fast Mode");
+        data.push_back("[INFO] Vela Hexagon DSP I2C controllers support 400 kHz Fast Mode");
         data.push_back("[INFO] Configure via clock-frequency = <400000> in device tree");
     }
 
@@ -1528,7 +1528,7 @@ TestOutput CommunicationInterfaceTesting::testFastModePlus()
     std::vector<std::string> data;
     data.push_back("=== I2C Fast Mode Plus (1 MHz) Verification (Vela) ===");
 
-    data.push_back("[INFO] Vela Sitara AM62x/AM64x I2C controllers support 1 MHz Fast Mode Plus");
+    data.push_back("[INFO] Vela Qualcomm QCS6490 I2C controllers support 1 MHz Fast Mode Plus");
     data.push_back("[INFO] Requires clock-frequency = <1000000> in DT and 1.8V I/O voltage");
 
     static const std::vector<std::string> i2cDtPaths = {
@@ -1580,7 +1580,7 @@ TestOutput CommunicationInterfaceTesting::testHighspeedMode()
     std::vector<std::string> data;
     data.push_back("=== I2C High-Speed Mode (3.4 MHz) (Vela) ===");
 
-    data.push_back("[INFO] Vela Sitara AM62x/AM64x I2C supports 3.4 MHz High Speed Mode (Hs-mode)");
+    data.push_back("[INFO] Vela Qualcomm QCS6490 I2C supports 3.4 MHz High Speed Mode (Hs-mode)");
     data.push_back("[INFO] Requires: clock-frequency = <3400000>, hs-mode master code in DT");
     data.push_back("[INFO] and appropriate pull-up resistors (< 20 pF bus capacitance)");
 
@@ -1611,7 +1611,7 @@ TestOutput CommunicationInterfaceTesting::testHighspeedMode()
 
     if (!found) {
         data.push_back("[INFO] DT not readable from host build environment");
-        data.push_back("[INFO] High-speed mode availability confirmed by Sitara AM62x/AM64x hardware spec");
+        data.push_back("[INFO] High-speed mode availability confirmed by Qualcomm QCS6490 hardware spec");
     }
 
     {
@@ -1627,7 +1627,7 @@ TestOutput CommunicationInterfaceTesting::testHighspeedMode()
 /**
  * @brief Verify I2C clock stretching support.
  * @details Clock stretching allows a slave to hold SCL low to pause the master.
- *          Checks for PRU-ICSS I2C controller capability via sysfs/DT.
+ *          Checks for Hexagon DSP I2C controller capability via sysfs/DT.
  * @return TestOutput with pass/fail and capability details.
  */
 TestOutput CommunicationInterfaceTesting::testI2cClockStretching()
@@ -1658,7 +1658,7 @@ TestOutput CommunicationInterfaceTesting::testI2cClockStretching()
     }
 
     if (!found) {
-        data.push_back("[INFO] Vela PRU-ICSS I2C master handles clock stretching automatically");
+        data.push_back("[INFO] Vela Hexagon DSP I2C master handles clock stretching automatically");
         data.push_back("[INFO] SCL low timeout configurable via nvidia,timeout-dt property");
         data.push_back("[PASS] Clock stretching supported by hardware design");
     }
@@ -1676,7 +1676,7 @@ TestOutput CommunicationInterfaceTesting::testI2cClockStretching()
 /**
  * @brief Verify I2C multi-master arbitration support.
  * @details Checks /proc/interrupts for I2C arbitration-lost conditions and
- *          confirms the PRU-ICSS I2C controller handles the arbitration protocol.
+ *          confirms the Hexagon DSP I2C controller handles the arbitration protocol.
  * @return TestOutput with pass/fail and arbitration capability information.
  */
 TestOutput CommunicationInterfaceTesting::testMultimasterArbitration()
@@ -1696,7 +1696,7 @@ TestOutput CommunicationInterfaceTesting::testMultimasterArbitration()
         data.push_back("[INFO] No I2C interrupts found in /proc/interrupts");
     }
 
-    data.push_back("[INFO] Vela Sitara AM62x/AM64x I2C supports multi-master bus arbitration");
+    data.push_back("[INFO] Vela Qualcomm QCS6490 I2C supports multi-master bus arbitration");
     data.push_back("[INFO] Lost arbitration causes NAK and controller backs off per I2C spec");
     data.push_back("[INFO] Arbitration-lost counter available via kernel I2C statistics");
 
@@ -1743,7 +1743,7 @@ TestOutput CommunicationInterfaceTesting::testI2cRepeatedStart()
     }
 
     if (!found) {
-        data.push_back("[INFO] Vela PRU-ICSS NDTM I2C controller supports repeated-start natively");
+        data.push_back("[INFO] Vela Hexagon DSP NDTM I2C controller supports repeated-start natively");
         data.push_back("[PASS] Repeated-start supported via I2C_RDWR ioctl with chained messages");
     }
 

@@ -277,11 +277,11 @@ TestOutput DisplayInterfaces::testDisplayHotPlugDetection()
     if (!hpdStatus.empty()) data.push_back("HPD status: " + hpdStatus);
     else data.push_back("HPD: check /sys/class/drm/card*-HDMI*/status when display connected.");
 
-    // Check HPD GPIO (PRU-ICSS GPIO on Vela)
+    // Check HPD GPIO (Hexagon DSP GPIO on Vela)
     std::string hpdDmesg = dispRunCmd("dmesg 2>/dev/null | grep -i 'hdmi\\|hotplug\\|hpd' | tail -5");
     if (!hpdDmesg.empty()) data.push_back("dmesg HPD events: " + hpdDmesg.substr(0, 300));
 
-    data.push_back("Vela HPD: Hardware interrupt via PRU-ICSS GPIO attached to micro-HDMI connector.");
+    data.push_back("Vela HPD: Hardware interrupt via Hexagon DSP GPIO attached to micro-HDMI connector.");
     data.push_back("PASS: Hot-plug detection check complete.");
     {
         TestOutput _out;

@@ -1,7 +1,7 @@
 /**
  * @file camera_interfaces_lib.cpp
  * @brief Implementation file for CameraInterfacesTesting class
- *        Target platform: Vela Platform (Sitara AM62x/AM64x + PRU-ICSS)
+ *        Target platform: Vela Platform (Qualcomm QCS6490 + Hexagon DSP)
  * @author sandesh ghimire
  * @copyright (C) Soccentric LLC */
 
@@ -204,7 +204,7 @@ TestOutput CameraInterfacesTesting::testAllCsi2LanesFunctionality()
     // --- 4. Validate lane count from device-tree (if accessible) ---
     const std::string dtCamera = "/proc/device-tree/unicam";
     if (pathExists(dtCamera)) {
-        data.push_back("[PASS] PRU-ICSS camera platform device-tree node found");
+        data.push_back("[PASS] Hexagon DSP camera platform device-tree node found");
         auto dtEntries = listDir(dtCamera);
         data.push_back("       " + std::to_string(dtEntries.size()) + " sub-entries in camera DT node");
     } else {
@@ -1024,10 +1024,10 @@ TestOutput CameraInterfacesTesting::testIspPipelineProcessing()
         }
     }
 
-    // 3. Check NvMedia / PRU-ICSS Vi device
+    // 3. Check NvMedia / Hexagon DSP Vi device
     const std::string viPath = "/dev/rp1-vi0";
     if (pathExists(viPath))
-        data.push_back("[PASS] PRU-ICSS VI device found: " + viPath);
+        data.push_back("[PASS] Hexagon DSP VI device found: " + viPath);
     else
         data.push_back("[INFO] /dev/rp1-vi0 not present (may use V4L2 video nodes instead)");
 

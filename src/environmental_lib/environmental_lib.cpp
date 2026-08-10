@@ -70,14 +70,14 @@ EnvironmentalTesting::~EnvironmentalTesting()
 
 /**
  * @brief Verify SoC and board temperatures are within the Vela rated range.
- * @details Vela Sitara AM62x/AM64x rated operating range: 0 °C to 85 °C junction.
+ * @details Vela Qualcomm QCS6490 rated operating range: 0 °C to 85 °C junction.
  *          Reads thermal_zone0 (cpu-thermal) and thermal_zone1 (rp1-thermal)
  *          and checks they are within 0–80 °C nominal operating band.
  */
 TestOutput EnvironmentalTesting::testTemperatureRange()
 {
     std::vector<std::string> data;
-    data.push_back("=== Operating Temperature Range (Vela Sitara AM62x/AM64x) ===");
+    data.push_back("=== Operating Temperature Range (Vela Qualcomm QCS6490) ===");
     data.push_back("[INFO] Rated: 0–85 °C junction, nominal operating: 0–80 °C");
 
     bool allOk = true;
@@ -237,9 +237,9 @@ TestOutput EnvironmentalTesting::testEmiemcCompliance()
     data.push_back("=== EMI/EMC Compliance Proxy (Vela) ===");
     data.push_back("[INFO] CISPR 32 / EN 55032 testing requires an RF shielded test lab");
 
-    // Vela spread-spectrum: Sitara AM62x/AM64x supports SSC; check config.txt
-    std::string ssc = envRunCmd("grep -i 'spread_spectrum\\|ssc' /boot/firmware/config.txt 2>/dev/null");
-    data.push_back(ssc.empty() ? "[INFO] No explicit spread-spectrum config in config.txt"
+    // Vela spread-spectrum: Qualcomm QCS6490 supports SSC; check extlinux.conf
+    std::string ssc = envRunCmd("grep -i 'spread_spectrum\\|ssc' /boot/firmware/extlinux.conf 2>/dev/null");
+    data.push_back(ssc.empty() ? "[INFO] No explicit spread-spectrum config in extlinux.conf"
                                : "[INFO] SSC config: " + ssc);
 
     // CPU frequency (high clocks → more EMI)

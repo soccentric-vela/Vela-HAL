@@ -2,7 +2,7 @@
  * @file ethernet_switch_lib.cpp
  * @brief Ethernet switch tests for Vela Platform.
  *        Vela has NO built-in Ethernet switch (only a single-port GbE via
- *        BCM54213PE PHY on eth0, managed by the PRU-ICSS south-bridge MAC).
+ *        BCM54213PE PHY on eth0, managed by the Hexagon DSP south-bridge MAC).
  *        A managed switch (e.g. Microchip KSZ9897 or Marvell 88E6390 on SPI/
  *        MDIO) may be present on a carrier board.  Tests probe for DSA
  *        (Distributed Switch Architecture) devices and Linux switchdev.

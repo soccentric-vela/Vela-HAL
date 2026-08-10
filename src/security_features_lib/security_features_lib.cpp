@@ -63,7 +63,7 @@ TestOutput SecurityFeaturesTesting::testBootRomExecution()
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Sitara AM62x/AM64x Boot ROM execution check");
+    data.push_back("Qualcomm QCS6490 Boot ROM execution check");
     data.push_back("Vela boot sequence: BootROM (OTP) → EEPROM bootloader → kernel");
 
     // Check EEPROM bootloader version
@@ -219,7 +219,7 @@ TestOutput SecurityFeaturesTesting::testHardwareRootOfTrust()
     bool passed = true;
 
     data.push_back("Hardware root of trust check (Vela)");
-    data.push_back("Vela hardware RoT: Sitara AM62x/AM64x OTP + immutable BootROM");
+    data.push_back("Vela hardware RoT: Qualcomm QCS6490 OTP + immutable BootROM");
 
     // Read OTP rows
     std::string otp = secRunCmd("ti-syscmd otp_dump 2>/dev/null | head -20");
@@ -292,7 +292,7 @@ TestOutput SecurityFeaturesTesting::testCryptographicAccelerators()
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Cryptographic accelerators check (Vela — ARMv8.2-A Cortex-A76)");
+    data.push_back("Cryptographic accelerators check (Vela — ARMv8.2-A Kryo)");
 
     // Check CPU crypto features
     std::string cpuFlags = secRunCmd("grep -m1 '^Features' /proc/cpuinfo 2>/dev/null");
@@ -341,7 +341,7 @@ TestOutput SecurityFeaturesTesting::testHardwareRandomNumberGenerator()
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Hardware RNG check (Vela: Sitara AM62x/AM64x HRNG, /dev/hwrng)");
+    data.push_back("Hardware RNG check (Vela: Qualcomm QCS6490 HRNG, /dev/hwrng)");
 
     bool hwrngPresent = (access("/dev/hwrng", F_OK) == 0);
     data.push_back("/dev/hwrng: " + std::string(hwrngPresent ? "PRESENT" : "not found"));
@@ -406,13 +406,13 @@ TestOutput SecurityFeaturesTesting::testMemoryEncryption()
     bool passed = true;
 
     data.push_back("Memory encryption check (Vela LPDDR4X)");
-    data.push_back("Vela Sitara AM62x/AM64x + LPDDR4X: NO hardware inline memory encryption.");
+    data.push_back("Vela Qualcomm QCS6490 + LPDDR4X: NO hardware inline memory encryption.");
     data.push_back("LPDDR4X does not support DRAM-level AES encryption on Vela.");
 
     // Check ARM MTE (Memory Tagging Extension)
     std::string cpuFlags = secRunCmd("grep -m1 '^Features' /proc/cpuinfo 2>/dev/null");
     bool hasMTE = cpuFlags.find("mte") != std::string::npos;
-    data.push_back("ARM MTE (Memory Tagging Extension): " + std::string(hasMTE ? "supported" : "not supported on Cortex-A76"));
+    data.push_back("ARM MTE (Memory Tagging Extension): " + std::string(hasMTE ? "supported" : "not supported on Kryo"));
 
     // Check Pointer Authentication (PAC) — a memory security feature
     bool hasPAC = cpuFlags.find("paca") != std::string::npos || cpuFlags.find("pacg") != std::string::npos;
@@ -484,7 +484,7 @@ TestOutput SecurityFeaturesTesting::testJtagSecurity()
     bool passed = true;
 
     data.push_back("JTAG security check (Vela)");
-    data.push_back("Vela Sitara AM62x/AM64x exposes JTAG via GPIO header (ARM CoreSight/DAP).");
+    data.push_back("Vela Qualcomm QCS6490 exposes JTAG via GPIO header (ARM CoreSight/DAP).");
     data.push_back("Default: JTAG is DISABLED in Vela OS (GPIO not muxed to JTAG).");
 
     // Check if JTAG is enabled in device tree
@@ -497,7 +497,7 @@ TestOutput SecurityFeaturesTesting::testJtagSecurity()
     if (!otpJtag.empty()) data.push_back("OTP row 65 (JTAG ctrl): " + otpJtag);
 
     data.push_back("To permanently disable JTAG: set OTP JTAG_DISABLED fuse.");
-    data.push_back("Enable JTAG (development): dtoverlay=enable-jtag in config.txt");
+    data.push_back("Enable JTAG (development): dtoverlay=enable-jtag in extlinux.conf");
     data.push_back("PASS: JTAG security check complete.");
     {
         TestOutput _out;

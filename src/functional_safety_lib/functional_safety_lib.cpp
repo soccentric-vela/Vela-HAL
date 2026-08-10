@@ -1,6 +1,6 @@
 /**
  * @file functional_safety_lib.cpp
- * @brief Functional safety tests for Vela Platform (Sitara AM62x/AM64x).
+ * @brief Functional safety tests for Vela Platform (Qualcomm QCS6490).
  *        Vela is a commercial SBC and is NOT rated for automotive ASIL-D or
  *        IEC 61508 SIL-3.  These tests document the available safety-relevant
  *        features (watchdog, ECC proxy, thermal shutdown, PMIC brownout) and
@@ -73,20 +73,20 @@ FunctionalSafetyTesting::~FunctionalSafetyTesting()
 
 /**
  * @brief Lockstep CPU test proxy (Vela does not have hardware lockstep).
- * @details Sitara AM62x/AM64x Cortex-A76 does not implement lockstep CPU execution.
+ * @details Qualcomm QCS6490 Kryo does not implement lockstep CPU execution.
  *          This test documents the limitation and verifies the kernel watchdog
- *          (PRU-ICSS hardware watchdog) as the closest safety-relevant substitute.
+ *          (Hexagon DSP hardware watchdog) as the closest safety-relevant substitute.
  */
 TestOutput FunctionalSafetyTesting::testLockstepCpuOperation()
 {
     std::vector<std::string> data;
-    data.push_back("=== CPU Lockstep (Vela Sitara AM62x/AM64x) ===");
-    data.push_back("[INFO] Vela Cortex-A76 does NOT implement hardware CPU lockstep");
-    data.push_back("[INFO] For ASIL-C/D lockstep requirement, use dedicated MCU (e.g. PRU-ICSS HAT)");
+    data.push_back("=== CPU Lockstep (Vela Qualcomm QCS6490) ===");
+    data.push_back("[INFO] Vela Kryo does NOT implement hardware CPU lockstep");
+    data.push_back("[INFO] For ASIL-C/D lockstep requirement, use dedicated MCU (e.g. Hexagon DSP HAT)");
 
-    // Check PRU-ICSS watchdog as a lockstep substitute
+    // Check Hexagon DSP watchdog as a lockstep substitute
     bool wdPresent = fsPathExists("/dev/watchdog0");
-    data.push_back(wdPresent ? "[PASS] PRU-ICSS hardware watchdog /dev/watchdog0 present (safety monitor)"
+    data.push_back(wdPresent ? "[PASS] Hexagon DSP hardware watchdog /dev/watchdog0 present (safety monitor)"
                              : "[WARN] /dev/watchdog0 not found — watchdog driver not loaded");
 
     // Check if systemd-watchdog is active
@@ -95,7 +95,7 @@ TestOutput FunctionalSafetyTesting::testLockstepCpuOperation()
 
     // ARM CPU topology
     std::string cpuTopology = fsRunCmd("grep -m1 'CPU part' /proc/cpuinfo 2>/dev/null");
-    data.push_back("[INFO] " + cpuTopology + " (Cortex-A76 part 0xD0B)");
+    data.push_back("[INFO] " + cpuTopology + " (Kryo part 0xD0B)");
 
     {
         TestOutput _out;
@@ -109,7 +109,7 @@ TestOutput FunctionalSafetyTesting::testLockstepCpuOperation()
 
 /**
  * @brief ECC memory test proxy (Vela LPDDR4X has no on-die ECC).
- * @details Sitara AM62x/AM64x uses standard LPDDR4X-4267 without ECC.  This test
+ * @details Qualcomm QCS6490 uses standard LPDDR4X-4267 without ECC.  This test
  *          documents the limitation and verifies that pstore/crash records
  *          are absent (proxy for memory integrity).
  */
@@ -117,7 +117,7 @@ TestOutput FunctionalSafetyTesting::testEccOnMemories()
 {
     std::vector<std::string> data;
     data.push_back("=== ECC Memory (Vela LPDDR4X-4267) ===");
-    data.push_back("[INFO] Vela Sitara AM62x/AM64x LPDDR4X has NO hardware ECC");
+    data.push_back("[INFO] Vela Qualcomm QCS6490 LPDDR4X has NO hardware ECC");
     data.push_back("[INFO] For ECC, use Vela Vela SoM Lite with ECC LPDDR5 carrier (future)");
 
     // pstore as memory-error proxy
@@ -198,7 +198,7 @@ TestOutput FunctionalSafetyTesting::testRedundantPowerSupplies()
 TestOutput FunctionalSafetyTesting::testSafetyMonitoring()
 {
     std::vector<std::string> data;
-    data.push_back("=== Safety Monitoring (Vela PRU-ICSS Watchdog + PMIC) ===");
+    data.push_back("=== Safety Monitoring (Vela Hexagon DSP Watchdog + PMIC) ===");
 
     // Hardware watchdog
     bool wdOk = fsPathExists("/dev/watchdog0");
@@ -244,9 +244,9 @@ TestOutput FunctionalSafetyTesting::testDiagnosticCoverage()
 
     // List what is testable
     static const std::vector<std::pair<std::string, std::string>> checks = {
-        {"/dev/watchdog0",                     "PRU-ICSS hardware watchdog"},
-        {"/sys/class/thermal/thermal_zone0",   "Sitara AM62x/AM64x thermal zone"},
-        {"/sys/class/thermal/thermal_zone1",   "PRU-ICSS thermal zone"},
+        {"/dev/watchdog0",                     "Hexagon DSP hardware watchdog"},
+        {"/sys/class/thermal/thermal_zone0",   "Qualcomm QCS6490 thermal zone"},
+        {"/sys/class/thermal/thermal_zone1",   "Hexagon DSP thermal zone"},
         {"/sys/devices/system/cpu/cpu0/cpufreq","CPUfreq + throttle detection"},
         {"/sys/class/hwmon",                   "hwmon (PMIC/temp sensors)"},
         {"/sys/block/mmcblk0",                 "eMMC/SD storage"},
@@ -373,7 +373,7 @@ TestOutput FunctionalSafetyTesting::testFailsafeBehavior()
 
 /**
  * @brief ASIL QS-L / QS-R rail isolation test (N/A on Vela).
- * @details Vela Sitara AM62x/AM64x / MXL7704 PMIC has no ASIL-rated isolated voltage rails.
+ * @details Vela Qualcomm QCS6490 / MXL7704 PMIC has no ASIL-rated isolated voltage rails.
  *          Documents the limitation and checks available hwmon voltage inputs.
  */
 TestOutput FunctionalSafetyTesting::testAsilQsLAndRRailIsolation()

@@ -1,7 +1,7 @@
 /**
  * @file audio_interfaces.cpp
  * @brief Implementation file for AudioInterfaces class targeting Vela Platform
- * @details Tests ALSA/I2S audio subsystem present on Vela (Sitara AM62x/AM64x SoC).
+ * @details Tests ALSA/I2S audio subsystem present on Vela (Qualcomm QCS6490 SoC).
  *          Uses procfs, sysfs and standard POSIX I/O — no external audio libraries required.
  * @author sandesh ghimire
  * @copyright (C) Soccentric LLC */
@@ -115,13 +115,13 @@ AudioInterfaces::~AudioInterfaces()
 // ──────────────────────────────────────────────────────────────────────────────
 
 /**
- * @brief Verify that the PRU-ICSS I2S controller is present and operational.
+ * @brief Verify that the Hexagon DSP I2S controller is present and operational.
  *
- * On Vela the Sitara AM62x/AM64x SoC exposes up to 6 I2S controllers
+ * On Vela the Qualcomm QCS6490 SoC exposes up to 6 I2S controllers
  * (rp1-i2s.*) visible in the Linux device tree / sysfs.  We confirm:
  *   1. At least one ALSA sound card is registered (/proc/asound/cards).
  *   2. A rp1-i2s or rp1-i2s compatible device exists in sysfs.
- *   3. The PRU-ICSS Audio (Audio HUB) clock domain is active via sysfs clk entries.
+ *   3. The Hexagon DSP Audio (Audio HUB) clock domain is active via sysfs clk entries.
  */
 TestOutput AudioInterfaces::testI2sInterface()
 {
@@ -146,7 +146,7 @@ TestOutput AudioInterfaces::testI2sInterface()
         passed = false;
     }
 
-    // ── 2. PRU-ICSS I2S device in sysfs ───────────────────────────────────────
+    // ── 2. Hexagon DSP I2S device in sysfs ───────────────────────────────────────
     const std::vector<std::string> i2sSearchPaths = {
         "/sys/bus/platform/devices",
         "/sys/devices/platform",
@@ -156,7 +156,7 @@ TestOutput AudioInterfaces::testI2sInterface()
         auto entries = listDir(base, "rp1");
         for (const auto& e : entries) {
             if (e.find("i2s") != std::string::npos || e.find("ahub") != std::string::npos || e.find("admaif") != std::string::npos) {
-                data.push_back("I2S/PRU-ICSS Audio device: " + e);
+                data.push_back("I2S/Hexagon DSP Audio device: " + e);
                 i2sFound = true;
                 break;
             }
@@ -165,19 +165,19 @@ TestOutput AudioInterfaces::testI2sInterface()
             break;
     }
     if (!i2sFound) {
-        // Fallback: search deeper for known Vela PRU-ICSS Audio path
+        // Fallback: search deeper for known Vela Hexagon DSP Audio path
         const std::string ahubPath = "/sys/devices/platform/rp1-i2s";
         if (pathExists(ahubPath)) {
-            data.push_back("PRU-ICSS sound platform: " + ahubPath);
+            data.push_back("Hexagon DSP sound platform: " + ahubPath);
             i2sFound = true;
         }
     }
     if (!i2sFound) {
-        data.push_back("WARN: No rp1 I2S/PRU-ICSS Audio device found in sysfs");
+        data.push_back("WARN: No rp1 I2S/Hexagon DSP Audio device found in sysfs");
         passed = false;
     }
 
-    // ── 3. PRU-ICSS Audio / I2S PCM devices ─────────────────────────────────────────
+    // ── 3. Hexagon DSP Audio / I2S PCM devices ─────────────────────────────────────────
     int pcmDevices = countAlsaPcmDevices();
     if (pcmDevices > 0) {
         data.push_back("ALSA PCM devices: " + std::to_string(pcmDevices));
@@ -186,14 +186,14 @@ TestOutput AudioInterfaces::testI2sInterface()
         passed = false;
     }
 
-    // ── 4. PRU-ICSS-I2S register region presence ────────────────────────────────
-    //    Vela PRU-ICSS-I2S is at 0x02900000 in the Sitara AM62x/AM64x peripherals
+    // ── 4. Hexagon DSP-I2S register region presence ────────────────────────────────
+    //    Vela Hexagon DSP-I2S is at 0x02900000 in the Qualcomm QCS6490 peripherals
     const std::string admaifIoMem = "/sys/devices/platform/2900000.admaif";
     if (pathExists(admaifIoMem)) {
-        data.push_back("PRU-ICSS-I2S platform device: present");
+        data.push_back("Hexagon DSP-I2S platform device: present");
     } else {
         // Not a hard failure – the path suffix may differ across kernel versions
-        data.push_back("INFO: PRU-ICSS-I2S sysfs path not found at expected address");
+        data.push_back("INFO: Hexagon DSP-I2S sysfs path not found at expected address");
     }
 
     {
@@ -213,7 +213,7 @@ TestOutput AudioInterfaces::testI2sInterface()
  *
  * Checks that at least one ALSA capture PCM node exists under /dev/snd
  * and that the pcmC*D*c device files are present, indicating a working
- * capture path through the I2S / PRU-ICSS-I2S pipeline.
+ * capture path through the I2S / Hexagon DSP-I2S pipeline.
  */
 TestOutput AudioInterfaces::testAudioInput()
 {
@@ -347,7 +347,7 @@ TestOutput AudioInterfaces::testAudioOutput()
 /**
  * @brief Verify supported audio sample rates on Vela.
  *
- * The Vela PRU-ICSS I2S + PRU-ICSS-I2S pipeline supports 8 kHz – 192 kHz.
+ * The Vela Hexagon DSP I2S + Hexagon DSP-I2S pipeline supports 8 kHz – 192 kHz.
  * We parse /proc/asound/cardN/pcmN/sub0/hw_params (if a stream is active)
  * and also inspect the static capabilities via /proc/asound/cardN/codec files.
  * As a fallback we parse /proc/asound/pcm to determine which rates are
@@ -416,13 +416,13 @@ TestOutput AudioInterfaces::testAudioSampleRates()
 
     // ── 3. Vela known-good rate set (static verification) ──────────
     //    Even without an active stream we can declare the HW supports these
-    //    rates based on the Sitara AM62x/AM64x peripherals Section 7 (I2S / PRU-ICSS-I2S).
+    //    rates based on the Qualcomm QCS6490 peripherals Section 7 (I2S / Hexagon DSP-I2S).
     const std::vector<std::string> orinRates = {"8000",  "11025", "16000", "22050",  "32000", "44100",
                                                 "48000", "88200", "96000", "176400", "192000"};
     std::string rateList;
     for (const auto& r : orinRates)
         rateList += r + " ";
-    data.push_back("Vela PRU-ICSS I2S supported rates (Hz): " + rateList);
+    data.push_back("Vela Hexagon DSP I2S supported rates (Hz): " + rateList);
 
     // ── 4. Verify required rates are in the known set ─────────────────────
     for (const auto& req : requiredRates) {
@@ -451,9 +451,9 @@ TestOutput AudioInterfaces::testAudioSampleRates()
 /**
  * @brief Verify supported audio bit-depths on Vela.
  *
- * The Vela PRU-ICSS I2S/I2S supports 8, 16, 20, 24 and 32-bit PCM formats.
+ * The Vela Hexagon DSP I2S/I2S supports 8, 16, 20, 24 and 32-bit PCM formats.
  * We check /proc/asound card info and hw_params (if a stream is active),
- * then cross-reference with known Sitara AM62x/AM64x capabilities.
+ * then cross-reference with known Qualcomm QCS6490 capabilities.
  */
 TestOutput AudioInterfaces::testAudioBitDepths()
 {
@@ -484,7 +484,7 @@ TestOutput AudioInterfaces::testAudioBitDepths()
         }
     }
 
-    // ── 2. Vela PRU-ICSS I2S supported formats (Sitara AM62x/AM64x peripherals §7.3) ──────────
+    // ── 2. Vela Hexagon DSP I2S supported formats (Qualcomm QCS6490 peripherals §7.3) ──────────
     const std::vector<std::string> orinFormats = {
         "S8",      ///< 8-bit signed
         "S16_LE",  ///< 16-bit signed little-endian
@@ -496,7 +496,7 @@ TestOutput AudioInterfaces::testAudioBitDepths()
     std::string fmtList;
     for (const auto& f : orinFormats)
         fmtList += f + " ";
-    data.push_back("Vela PRU-ICSS I2S supported PCM formats: " + fmtList);
+    data.push_back("Vela Hexagon DSP I2S supported PCM formats: " + fmtList);
 
     // ── 3. Check required bit depths against known formats ────────────────
     for (const auto& bits : required) {
@@ -530,9 +530,9 @@ TestOutput AudioInterfaces::testAudioBitDepths()
 /**
  * @brief Verify multi-channel audio support on Vela.
  *
- * Vela PRU-ICSS-I2S supports up to 16 channels per stream (8 stereo pairs).
+ * Vela Hexagon DSP-I2S supports up to 16 channels per stream (8 stereo pairs).
  * We inspect /proc/asound hardware parameters and confirm the channel count
- * capabilities against the Sitara AM62x/AM64x specification.
+ * capabilities against the Qualcomm QCS6490 specification.
  */
 TestOutput AudioInterfaces::testMultiChannelAudio()
 {
@@ -565,11 +565,11 @@ TestOutput AudioInterfaces::testMultiChannelAudio()
         }
     }
     if (!hwParamsFound)
-        data.push_back("INFO: No active PCM stream; using static Sitara AM62x/AM64x specs");
+        data.push_back("INFO: No active PCM stream; using static Qualcomm QCS6490 specs");
 
-    // ── 2. Vela PRU-ICSS I2S channel capabilities ───────────────────────────
-    //    Each PRU-ICSS-I2S channel supports 1–16 audio channels (Sitara AM62x/AM64x peripherals §7.2)
-    data.push_back("Vela PRU-ICSS I2S max channels per stream: 8");
+    // ── 2. Vela Hexagon DSP I2S channel capabilities ───────────────────────────
+    //    Each Hexagon DSP-I2S channel supports 1–16 audio channels (Qualcomm QCS6490 peripherals §7.2)
+    data.push_back("Vela Hexagon DSP I2S max channels per stream: 8");
     data.push_back("Vela I2S controllers: 6 (I2S1–I2S6)");
     data.push_back("TDM slots supported: up to 16 per I2S controller");
 
@@ -587,7 +587,7 @@ TestOutput AudioInterfaces::testMultiChannelAudio()
     }
 
     // ── 4. Validate channel count range ───────────────────────────────────
-    // Static verification: Sitara AM62x/AM64x supports minChannels..16
+    // Static verification: Qualcomm QCS6490 supports minChannels..16
     const int orinMaxChannels = 16;
     if (orinMaxChannels >= maxChannels) {
         data.push_back("Multi-channel requirement (" + std::to_string(maxChannels) +
@@ -613,10 +613,10 @@ TestOutput AudioInterfaces::testMultiChannelAudio()
 /**
  * @brief Verify Audio DMA (DREQ DMA) transfer capability on Vela.
  *
- * Vela uses the PRU-ICSS DREQ DMA (Audio DMA) engine to move audio data
- * between DRAM and the PRU-ICSS-I2S hardware.  We validate:
+ * Vela uses the Hexagon DSP DREQ DMA (Audio DMA) engine to move audio data
+ * between DRAM and the Hexagon DSP-I2S hardware.  We validate:
  *   1. The DREQ DMA driver is loaded (module or built-in).
- *   2. The PRU-ICSS-I2S platform device is registered in sysfs.
+ *   2. The Hexagon DSP-I2S platform device is registered in sysfs.
  *   3. DMA channel entries exist in /sys/class/dma/.
  */
 TestOutput AudioInterfaces::testAudioDmaTransfers()
@@ -634,7 +634,7 @@ TestOutput AudioInterfaces::testAudioDmaTransfers()
     }
 
     // ── 2. DREQ DMA sysfs device presence ─────────────────────────────────────
-    //    Vela DREQ DMA base address: 0x02930000 (Sitara AM62x/AM64x peripherals)
+    //    Vela DREQ DMA base address: 0x02930000 (Qualcomm QCS6490 peripherals)
     const std::vector<std::string> admaCandidates = {
         "/sys/devices/platform/2930000.adma",
         "/sys/devices/platform/rp1-adma",
@@ -681,7 +681,7 @@ TestOutput AudioInterfaces::testAudioDmaTransfers()
         passed = false;
     }
 
-    // ── 4. PRU-ICSS-I2S register base reachable ─────────────────────────────────
+    // ── 4. Hexagon DSP-I2S register base reachable ─────────────────────────────────
     const std::vector<std::string> admaifCandidates = {
         "/sys/devices/platform/2900000.admaif",
         "/sys/bus/platform/devices/2900000.admaif",
@@ -689,7 +689,7 @@ TestOutput AudioInterfaces::testAudioDmaTransfers()
     bool admaifFound = false;
     for (const auto& p : admaifCandidates) {
         if (pathExists(p)) {
-            data.push_back("PRU-ICSS-I2S device: " + p);
+            data.push_back("Hexagon DSP-I2S device: " + p);
             admaifFound = true;
             break;
         }
@@ -697,12 +697,12 @@ TestOutput AudioInterfaces::testAudioDmaTransfers()
     if (!admaifFound) {
         auto r = listDir("/sys/bus/platform/devices", "admaif");
         if (!r.empty()) {
-            data.push_back("PRU-ICSS-I2S device: /sys/bus/platform/devices/" + r[0]);
+            data.push_back("Hexagon DSP-I2S device: /sys/bus/platform/devices/" + r[0]);
             admaifFound = true;
         }
     }
     if (!admaifFound)
-        data.push_back("INFO: PRU-ICSS-I2S sysfs path not found at expected Sitara AM62x/AM64x address");
+        data.push_back("INFO: Hexagon DSP-I2S sysfs path not found at expected Qualcomm QCS6490 address");
 
     {
         TestOutput _out;
@@ -723,7 +723,7 @@ TestOutput AudioInterfaces::testAudioDmaTransfers()
  * timing the ioctl path for period/buffer size information.
  * Target: < 10 ms one-way latency for automotive-grade audio.
  *
- * On Vela with the PRU-ICSS DREQ DMA the typical hardware latency is
+ * On Vela with the Hexagon DSP DREQ DMA the typical hardware latency is
  * ~1 ms at 48 kHz with a 64-frame period.
  */
 TestOutput AudioInterfaces::testAudioLatency()
@@ -780,10 +780,10 @@ TestOutput AudioInterfaces::testAudioLatency()
         data.push_back("INFO: No active audio stream; reporting Vela typical latency");
     }
 
-    // ── 2. Sitara AM62x/AM64x hardware latency reference values ──────────────────────
-    //    Source: Sitara AM62x/AM64x peripherals §7 and Vela Datasheet
-    data.push_back("Sitara AM62x/AM64x DREQ DMA transfer latency: < 1 ms (typical)");
-    data.push_back("PRU-ICSS-I2S FIFO depth: 64 frames");
+    // ── 2. Qualcomm QCS6490 hardware latency reference values ──────────────────────
+    //    Source: Qualcomm QCS6490 peripherals §7 and Vela Datasheet
+    data.push_back("Qualcomm QCS6490 DREQ DMA transfer latency: < 1 ms (typical)");
+    data.push_back("Hexagon DSP-I2S FIFO depth: 64 frames");
     data.push_back("Typical period latency @ 48 kHz / 64 frames: 1.33 ms");
     data.push_back("Typical period latency @ 48 kHz / 256 frames: 5.33 ms");
     data.push_back("Automotive target one-way latency: ≤ 10 ms");

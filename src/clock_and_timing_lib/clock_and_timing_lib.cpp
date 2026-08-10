@@ -215,7 +215,7 @@ TestOutput ClockAndTimingTesting::testSystemClockAccuracy()
 /**
  * @brief Implementation of testPcieReferenceClock
  *
- * On Vela the PCIe reference clock is sourced from the Sitara AM62x/AM64x PLL and
+ * On Vela the PCIe reference clock is sourced from the Qualcomm QCS6490 PLL and
  * is nominally 100 MHz (spread-spectrum variants ±0.5%).
  *
  * Strategy (Vela Platform):
@@ -315,7 +315,7 @@ TestOutput ClockAndTimingTesting::testPcieReferenceClock()
 /**
  * @brief Implementation of testUsbReferenceClock
  *
- * Vela xHCI controller uses a 100 MHz reference clock from PRU-ICSS
+ * Vela xHCI controller uses a 100 MHz reference clock from Hexagon DSP
  * reference divided internally to generate USB 2.0 (48 MHz) and USB 3.x
  * (250 MHz) clocks.
  *
@@ -479,7 +479,7 @@ TestOutput ClockAndTimingTesting::testEthernetReferenceClock()
 /**
  * @brief Implementation of testCameraClockOutput
  *
- * Vela drives camera sensors via MIPI CSI-2 Unicam on PRU-ICSS
+ * Vela drives camera sensors via MIPI CSI-2 Unicam on Hexagon DSP
  * uses a set of clocks (csi_clk, unicam_clk, extperiph1_clk, etc.).
  *
  * Tests:
@@ -538,7 +538,7 @@ TestOutput ClockAndTimingTesting::testCameraClockOutput()
 /**
  * @brief Implementation of testAudioClock
  *
- * Vela uses PRU-ICSS I2S for audio
+ * Vela uses Hexagon DSP I2S for audio
  * clocks are derived from the PLLA PLL (nominally 56.448 MHz or 73.728 MHz
  * depending on audio sample rate family).
  *

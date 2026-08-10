@@ -1,6 +1,6 @@
 /**
  * @file reliability_lib.cpp
- * @brief Reliability tests for Vela Platform (Sitara AM62x/AM64x).
+ * @brief Reliability tests for Vela Platform (Qualcomm QCS6490).
  *        Tests characterise the long-term health of the board by examining
  *        system uptime, thermal headroom, power-supply stability indicators,
  *        and storage health metrics accessible via kernel sysfs/procfs.
@@ -152,7 +152,7 @@ TestOutput ReliabilityTesting::testThermalCycling()
 {
     std::vector<std::string> data;
     data.push_back("=== Thermal Cycling Proxy (Vela) ===");
-    data.push_back("[INFO] Vela Sitara AM62x/AM64x rated: 0–85 °C junction");
+    data.push_back("[INFO] Vela Qualcomm QCS6490 rated: 0–85 °C junction");
 
     bool allOk = true;
     for (int zone = 0; zone <= 1; zone++)

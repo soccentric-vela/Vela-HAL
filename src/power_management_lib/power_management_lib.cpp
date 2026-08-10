@@ -86,7 +86,7 @@ TestOutput PowerManagementTesting::testMaximumPerformanceMode()
                    " (expected " + std::to_string(VELA_QCS6490_CPU_MAX_FREQ_MHZ) + " MHz)");
 
     if (maxF / 1000 < 2400) {
-        data.push_back("NOTE: CPU max freq below 2400 MHz. Check arm_freq= in /boot/firmware/config.txt");
+        data.push_back("NOTE: CPU max freq below 2400 MHz. Check arm_freq= in /boot/firmware/extlinux.conf");
     }
 
     // Check GPU governor
@@ -707,10 +707,10 @@ TestOutput PowerManagementTesting::testPercomponentPowerMeasurement()
     if (!perfPwr.empty()) data.push_back("CPU0 active time: " + perfPwr + " ms");
 
     data.push_back("Component power estimates (typical):");
-    data.push_back("  CPU (4x Cortex-A76 full load): ~5–8W");
+    data.push_back("  CPU (4x Kryo full load): ~5–8W");
     data.push_back("  GPU (VideoCore VII full load):  ~1–2W");
     data.push_back("  LPDDR4X RAM:                   ~1W");
-    data.push_back("  PRU-ICSS south-bridge:              ~0.5W");
+    data.push_back("  Hexagon DSP south-bridge:              ~0.5W");
     data.push_back("  USB/PCIe/Ethernet:             ~1W");
     data.push_back("Use INA3221/INA219 HAT for per-rail measurement.");
 

@@ -1,7 +1,7 @@
 /**
  * @file watchdog_and_reset_lib.cpp
  * @brief Implementation file for WatchdogAndResetTesting class — Vela Platform
- *        Vela watchdog: PRU-ICSS hardware watchdog, exposed as /dev/watchdog0.
+ *        Vela watchdog: Hexagon DSP hardware watchdog, exposed as /dev/watchdog0.
  *        Reset reason available via ti-syscmd get_throttled and dmesg.
  * @author sandesh ghimire
  * @copyright (C) Soccentric LLC */
@@ -64,14 +64,14 @@ TestOutput WatchdogAndResetTesting::testWatchdogTimerFunctionality()
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Watchdog timer test (Vela: PRU-ICSS watchdog, /dev/watchdog0)");
+    data.push_back("Watchdog timer test (Vela: Hexagon DSP watchdog, /dev/watchdog0)");
 
     bool wdExists = (access("/dev/watchdog0", F_OK) == 0);
     data.push_back("/dev/watchdog0 present: " + std::string(wdExists ? "yes" : "no"));
 
     if (!wdExists) {
-        data.push_back("INFO: Load watchdog driver: modprobe sitara_compatible-wdt or sitara12-wdt");
-        data.push_back("INFO: Enable via /boot/firmware/config.txt: dtparam=watchdog=on");
+        data.push_back("INFO: Load watchdog driver: modprobe sitara_compatible-wdt or cpu-thermal-wdt");
+        data.push_back("INFO: Enable via /boot/firmware/extlinux.conf: dtparam=watchdog=on");
         {
             TestOutput _out;
             _out.status = hal::Status::PASS;
@@ -155,7 +155,7 @@ TestOutput WatchdogAndResetTesting::testWatchdogTimeoutConfiguration()
         if (!procInfo.empty()) data.push_back("/proc/driver/watchdog: " + procInfo);
     }
 
-    data.push_back("Vela PRU-ICSS watchdog max timeout: 1048575 seconds (~12 days)");
+    data.push_back("Vela Hexagon DSP watchdog max timeout: 1048575 seconds (~12 days)");
     data.push_back("PASS: Timeout configuration check complete.");
     {
         TestOutput _out;
@@ -227,7 +227,7 @@ TestOutput WatchdogAndResetTesting::testWatchdogInterruptGeneration()
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Watchdog interrupt/pretimeout check (Vela PRU-ICSS watchdog)");
+    data.push_back("Watchdog interrupt/pretimeout check (Vela Hexagon DSP watchdog)");
 
     bool wdExists = (access("/dev/watchdog0", F_OK) == 0);
     if (!wdExists) {
@@ -323,8 +323,8 @@ TestOutput WatchdogAndResetTesting::testHardwareResetButton()
     bool passed = true;
 
     data.push_back("Hardware reset button check (Vela)");
-    data.push_back("Vela has a dedicated reset button (J2 header) wired to PRU-ICSS.");
-    data.push_back("J2 pin 1 = RUN (active-low reset), connects to Sitara AM62x/AM64x nRSTIN.");
+    data.push_back("Vela has a dedicated reset button (J2 header) wired to Hexagon DSP.");
+    data.push_back("J2 pin 1 = RUN (active-low reset), connects to Qualcomm QCS6490 nRSTIN.");
 
     // Check input-event for button press
     std::string evdev = wdRunCmd("ls /dev/input/event* 2>/dev/null | head -5");
@@ -433,7 +433,7 @@ TestOutput WatchdogAndResetTesting::testThermalReset()
     bool passed = true;
 
     data.push_back("Thermal reset check (Vela)");
-    data.push_back("Sitara AM62x/AM64x soft thermal shutdown at " +
+    data.push_back("Qualcomm QCS6490 soft thermal shutdown at " +
                    std::to_string(VELA_QCS6490_THERMAL_SHUTDOWN_C) + " °C");
 
     // Check current temperature

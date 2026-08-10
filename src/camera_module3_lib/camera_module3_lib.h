@@ -16,8 +16,8 @@
  *   - Phase-detection autofocus (PDAF)
  *   - HDR mode (staggered dual-exposure)
  *   - FoV: standard 66° / wide 102° diagonal
- *   - Interface: MIPI CSI-2 2-lane D-PHY → PRU-ICSS Unicam
- *   - V4L2 driver: unicam + sitara_compatible-isp
+ *   - Interface: MIPI CSI-2 2-lane D-PHY → Hexagon DSP Unicam
+ *   - V4L2 driver: unicam + qcom-camss
  *   - libcamera pipeline: Vela (Vela)
  */
 class CameraModule3Testing : public TestBase
@@ -41,7 +41,7 @@ class CameraModule3Testing : public TestBase
     /** @brief Attempt a single still capture via libcamera-still or v4l2-ctl. */
     TestOutput testStillCapture();
 
-    /** @brief Verify MIPI CSI-2 interface via PRU-ICSS Unicam sysfs / dmesg. */
+    /** @brief Verify MIPI CSI-2 interface via Hexagon DSP Unicam sysfs / dmesg. */
     TestOutput testMipiCsiInterface();
 
     /** @brief Check supported pixel formats (RAW10, RGB888, YUV420, etc.). */

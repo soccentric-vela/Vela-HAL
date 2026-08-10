@@ -1,7 +1,7 @@
 /**
  * @file mcu_interface_lib.cpp
  * @brief MCU interface tests for Vela Platform.
- *        Vela can communicate with an external MCU (PRU-ICSS, STM32, etc.) via
+ *        Vela can communicate with an external MCU (Hexagon DSP, STM32, etc.) via
  *        SPI (/dev/spidev0.0), UART (debug UART), or I2C (/dev/i2c-1).
  *        Tests labelled "testMcuToOrinDataTransfer" and "testMcuDmsInterface"
  *        reference Jetson AGX Orin; they are mapped to Vela equivalents.
@@ -81,7 +81,7 @@ McuInterfaceTesting::~McuInterfaceTesting()
 TestOutput McuInterfaceTesting::testMcuCommunicationInterface()
 {
     std::vector<std::string> data;
-    data.push_back("=== MCU Communication Interfaces (Vela → PRU-ICSS/STM32) ===");
+    data.push_back("=== MCU Communication Interfaces (Vela → Hexagon DSP/STM32) ===");
 
     vela::pru::PruIcssManager pru(VELA_QCS6490_PRU_REMOTEPROC_ID);
     std::string pruDetail;
@@ -147,7 +147,7 @@ TestOutput McuInterfaceTesting::testMcuFirmwareOperation()
     if (!mcuPathExists(VELA_QCS6490_DEBUG_UART))
     {
         data.push_back(std::string("[INFO] ") + VELA_QCS6490_DEBUG_UART + " not available — skipping UART probe");
-        data.push_back("[INFO] Connect MCU (PRU-ICSS/STM32) TX→Vela debug UART RX for this test");
+        data.push_back("[INFO] Connect MCU (Hexagon DSP/STM32) TX→Vela debug UART RX for this test");
         {
             TestOutput _out;
             _out.status = hal::Status::PASS;
@@ -188,9 +188,9 @@ TestOutput McuInterfaceTesting::testMcuFirmwareOperation()
 TestOutput McuInterfaceTesting::testMcuWatchdog()
 {
     std::vector<std::string> data;
-    data.push_back("=== MCU Watchdog (Vela PRU-ICSS WDT proxy) ===");
+    data.push_back("=== MCU Watchdog (Vela Hexagon DSP WDT proxy) ===");
 
-    // PRU-ICSS hardware watchdog (acts as board-level safety monitor)
+    // Hexagon DSP hardware watchdog (acts as board-level safety monitor)
     bool wdPresent = mcuPathExists("/dev/watchdog0");
     data.push_back(wdPresent ? "[PASS] Hardware watchdog /dev/watchdog0 available"
                              : "[WARN] No watchdog device");
@@ -403,7 +403,7 @@ TestOutput McuInterfaceTesting::testMcuToOrinDataTransfer()
     if (spiOk)
     {
         data.push_back("[PASS] SPI /dev/spidev0.0 available for MCU data transfer");
-        data.push_back("[INFO] Max SPI speed: 25 MHz (PRU-ICSS-limited); Vela SPI supports 125 MHz");
+        data.push_back("[INFO] Max SPI speed: 25 MHz (Hexagon DSP-limited); Vela SPI supports 125 MHz");
     }
     if (uartOk)
     {
@@ -424,7 +424,7 @@ TestOutput McuInterfaceTesting::testMcuToOrinDataTransfer()
 }
 
 /**
- * @brief Secondary MCU redundancy check (e.g. dual PRU-ICSS co-processors).
+ * @brief Secondary MCU redundancy check (e.g. dual Hexagon DSP co-processors).
  */
 TestOutput McuInterfaceTesting::testSecondaryMcuRedundancy()
 {
