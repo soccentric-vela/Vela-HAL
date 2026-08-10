@@ -232,7 +232,7 @@ TestOutput VisionAcceleratorTesting::testDmaEngine1Functionality()
     data.push_back(dmaPresent ? "[PASS] DMA platform devices found"
                               : "[INFO] DMA platform devices not found");
 
-    std::string dmaMod = vaRunCmd("grep -c 'sitara_compatible-dma\\|cpu-thermal' /proc/modules 2>/dev/null");
+    std::string dmaMod = vaRunCmd("grep -c 'vela_compatible-dma\\|cpu-thermal' /proc/modules 2>/dev/null");
     data.push_back("[INFO] BCM DMA module count: " + dmaMod);
 
     {
@@ -351,7 +351,7 @@ TestOutput VisionAcceleratorTesting::testComputerVisionAlgorithms()
     std::vector<std::string> data;
     data.push_back("=== Computer Vision Algorithms (Vela V4L2 ISP + OpenCV) ===");
 
-    bool ispOk = !vaRunCmd("grep -c 'sitara_compatible.isp' /proc/modules 2>/dev/null").empty();
+    bool ispOk = !vaRunCmd("grep -c 'vela_compatible.isp' /proc/modules 2>/dev/null").empty();
     data.push_back(ispOk ? "[PASS] qcom-camss V4L2 ISP available"
                          : "[INFO] qcom-camss not detected");
 

@@ -100,7 +100,7 @@ TestOutput SenseHatTesting::testSenseHatDetection()
     (void)overlayLoaded;
     bool senseFb = shPathExists("/dev/fb1") || !shRunCmd("lsmod | grep -c 'sense_fb'").empty();
     data.push_back(senseFb ? "[PASS] sense-fb module / /dev/fb1 present"
-                           : "[INFO] sense-fb not loaded (add dtoverlay=sitara-sense-hat to extlinux.conf)");
+                           : "[INFO] sense-fb not loaded (add dtoverlay=Qualcomm QCS6490-sense-hat to extlinux.conf)");
 
     // Sense HAT I2C addresses
     struct { const char* name; const char* addr; } addrs[] = {

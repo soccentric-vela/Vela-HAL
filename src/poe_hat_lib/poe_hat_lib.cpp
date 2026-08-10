@@ -258,7 +258,7 @@ TestOutput PoeHatTesting::testFanControl()
     {
         // Fallback: search via thermal cooling device
         std::string coolDev = poeRunCmd(
-            "grep -rl 'sitara-poe-fan\\|fan' /sys/class/thermal/cooling_device*/type 2>/dev/null | head -2");
+            "grep -rl 'Qualcomm QCS6490-poe-fan\\|fan' /sys/class/thermal/cooling_device*/type 2>/dev/null | head -2");
         if (!coolDev.empty())
         {
             data.push_back("[PASS] Thermal cooling device found:\n" + coolDev);
@@ -267,7 +267,7 @@ TestOutput PoeHatTesting::testFanControl()
         else
         {
             data.push_back("[INFO] No PoE HAT fan control found in hwmon or thermal cooling devices");
-            data.push_back("[INFO] Ensure dtoverlay=sitara-poe-fan is in /boot/firmware/extlinux.conf");
+            data.push_back("[INFO] Ensure dtoverlay=Qualcomm QCS6490-poe-fan is in /boot/firmware/extlinux.conf");
         }
     }
 

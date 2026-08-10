@@ -276,7 +276,7 @@ TestOutput CameraModule3Testing::testMipiCsiInterface()
         data.push_back("[INFO] dmesg unicam/csi:\n" + dmesgUni);
 
     // Check qcom-camss module
-    std::string ispMod = cm3RunCmd("grep -c 'sitara_compatible.isp' /proc/modules 2>/dev/null");
+    std::string ispMod = cm3RunCmd("grep -c 'vela_compatible.isp' /proc/modules 2>/dev/null");
     data.push_back(!ispMod.empty() && ispMod != "0"
         ? "[PASS] qcom-camss module loaded"
         : "[INFO] qcom-camss not in /proc/modules");
@@ -355,7 +355,7 @@ TestOutput CameraModule3Testing::testVideoStreaming()
         data.push_back("[PASS] /tmp/cm3_video.h264 written (" +
                        std::to_string(st.st_size / 1024) + " KB)");
 
-    data.push_back("[INFO] Vela H.264 encoding via V4L2 m2m (sitara_compatible-codec)");
+    data.push_back("[INFO] Vela H.264 encoding via V4L2 m2m (vela_compatible-codec)");
     {
         TestOutput _out;
         _out.status = hal::Status::PASS;

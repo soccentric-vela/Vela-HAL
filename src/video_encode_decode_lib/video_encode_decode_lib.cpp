@@ -4,7 +4,7 @@
  * @author sandesh ghimire
  * @copyright (C) Soccentric LLC *
  * Vela video codec hardware specifications (Qualcomm QCS6490 VPU / Hexagon DSP):
- *   sitara_compatible-codec (V4L2 M2M firmware codec via VPU):
+ *   vela_compatible-codec (V4L2 M2M firmware codec via VPU):
  *     - H.264 encode up to 1920×1080 @ 60 fps
  *     - H.264 decode up to 1920×1080 @ 60 fps
  *     - MJPEG encode/decode
@@ -12,9 +12,9 @@
  *     - H.265/HEVC decode up to 4K @ 30 fps
  *     - VP9 decode
  *   Device nodes (V4L2):
- *     /dev/video10   – sitara_compatible-codec encoder (H264, MJPEG)
- *     /dev/video11   – sitara_compatible-codec decoder (H264)
- *     /dev/video12   – sitara_compatible-codec ISP0
+ *     /dev/video10   – vela_compatible-codec encoder (H264, MJPEG)
+ *     /dev/video11   – vela_compatible-codec decoder (H264)
+ *     /dev/video12   – vela_compatible-codec ISP0
  *     /dev/video18   – rpivid HEVC/H265 decoder
  *     /dev/video19   – rpivid alternate decode node
  *   Software codecs via libav / GStreamer also fully supported.
@@ -38,10 +38,10 @@
 #include <vector>
 
 // ---------------------------------------------------------------------------
-// Vela video codec constants (sitara_compatible-codec + rpivid)
+// Vela video codec constants (vela_compatible-codec + rpivid)
 // ---------------------------------------------------------------------------
-static constexpr int    PI5_ENC_ENGINE_COUNT        = 1;    // sitara_compatible-codec
-static constexpr int    PI5_DEC_ENGINE_COUNT        = 2;    // sitara_compatible-codec + rpivid
+static constexpr int    PI5_ENC_ENGINE_COUNT        = 1;    // vela_compatible-codec
+static constexpr int    PI5_DEC_ENGINE_COUNT        = 2;    // vela_compatible-codec + rpivid
 static constexpr int    PI5_MAX_ENCODE_WIDTH        = 1920;
 static constexpr int    PI5_MAX_ENCODE_HEIGHT       = 1080;
 static constexpr int    PI5_MAX_DECODE_WIDTH        = 3840; // rpivid 4K
@@ -105,37 +105,37 @@ static bool vedDeviceExists(const std::string& path)
     return (access(path.c_str(), F_OK) == 0);
 }
 
-/** Detect sitara_compatible-codec encoder (V4L2 M2M). */
+/** Detect vela_compatible-codec encoder (V4L2 M2M). */
 static bool nvencPresent()
 {
-    // Vela: sitara_compatible-codec encoder at /dev/video10
+    // Vela: vela_compatible-codec encoder at /dev/video10
     if (vedDeviceExists("/dev/video10"))
         return true;
     // Check platform driver binding
-    return (access("/sys/bus/platform/devices/sitara_compatible-codec", F_OK) == 0);
+    return (access("/sys/bus/platform/devices/vela_compatible-codec", F_OK) == 0);
 }
 
-/** Detect sitara_compatible-codec decoder + rpivid HEVC decoder. */
+/** Detect vela_compatible-codec decoder + rpivid HEVC decoder. */
 static bool nvdecPresent()
 {
     if (vedDeviceExists("/dev/video11"))
-        return true; // sitara_compatible-codec H264 decoder
+        return true; // vela_compatible-codec H264 decoder
     if (vedDeviceExists("/dev/video18"))
         return true; // rpivid H265 decoder
     return false;
 }
 
-/** Detect MJPEG codec via sitara_compatible-codec or v4l2 JPEG. */
+/** Detect MJPEG codec via vela_compatible-codec or v4l2 JPEG. */
 static bool nvjpgPresent()
 {
-    // MJPEG is handled by sitara_compatible-codec on Vela; check /dev/video10 or video11
+    // MJPEG is handled by vela_compatible-codec on Vela; check /dev/video10 or video11
     return (vedDeviceExists("/dev/video10") || vedDeviceExists("/dev/video11"));
 }
 
 /** Detect ISP/compositor: Vela uses libcamera ISP or v4l2 subdevice. */
 static bool vicPresent()
 {
-    // Vela ISP exposed as /dev/video12 (sitara_compatible-codec ISP0) or media controller
+    // Vela ISP exposed as /dev/video12 (vela_compatible-codec ISP0) or media controller
     return vedDeviceExists("/dev/video12");
 }
 
@@ -151,7 +151,7 @@ static bool isPi5Platform()
     std::string model = vedGetModel();
     if (model.find("Vela Platform") != std::string::npos)
         return true;
-    // Fall back: check for sitara_compatible-codec
+    // Fall back: check for vela_compatible-codec
     return (nvencPresent() || nvdecPresent());
 }
 
@@ -223,15 +223,15 @@ VideoEncodeDecodeTesting::~VideoEncodeDecodeTesting()
 
 // ---------------------------------------------------------------------------
 // 1. testH265Encoding
-//    Verify the sitara_compatible-codec engine supports H.265/HEVC encoding on Vela.
+//    Verify the vela_compatible-codec engine supports H.265/HEVC encoding on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testH265Encoding()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – sitara_compatible-codec H.264/H.265 encoder");
-    data.push_back("sitara_compatible-codec engines: " + std::to_string(PI5_ENC_ENGINE_COUNT));
+    data.push_back("Platform: Vela Platform – vela_compatible-codec H.264/H.265 encoder");
+    data.push_back("vela_compatible-codec engines: " + std::to_string(PI5_ENC_ENGINE_COUNT));
 
     // Check platform
     std::string model = vedGetModel();
@@ -257,7 +257,7 @@ TestOutput VideoEncodeDecodeTesting::testH265Encoding()
     } else {
         std::string v4l2Enc = vedRunCmd("v4l2-ctl --list-devices 2>/dev/null | grep -i nvenc | head -2");
         if (!v4l2Enc.empty())
-            data.push_back("V4L2 sitara_compatible-codec: " + v4l2Enc.substr(0, 100));
+            data.push_back("V4L2 vela_compatible-codec: " + v4l2Enc.substr(0, 100));
         else
             data.push_back("GStreamer HEVC plugin unavailable – using device-node check only.");
     }
@@ -274,7 +274,7 @@ TestOutput VideoEncodeDecodeTesting::testH265Encoding()
     data.push_back("Max encode resolution: " + std::to_string(PI5_MAX_ENCODE_WIDTH) + "x" + std::to_string(PI5_MAX_ENCODE_HEIGHT));
 
     if (passed)
-        data.push_back("PASS: H.265 encoding hardware verified on Vela sitara_compatible-codec.");
+        data.push_back("PASS: H.265 encoding hardware verified on Vela vela_compatible-codec.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -287,14 +287,14 @@ TestOutput VideoEncodeDecodeTesting::testH265Encoding()
 
 // ---------------------------------------------------------------------------
 // 2. testH264Encoding
-//    Verify the sitara_compatible-codec engine supports H.264/AVC encoding on Vela.
+//    Verify the vela_compatible-codec engine supports H.264/AVC encoding on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testH264Encoding()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – sitara_compatible-codec H.264/AVC encoder");
+    data.push_back("Platform: Vela Platform – vela_compatible-codec H.264/AVC encoder");
 
     std::string model = vedGetModel();
     if (!model.empty())
@@ -319,11 +319,11 @@ TestOutput VideoEncodeDecodeTesting::testH264Encoding()
     if (!v4l2Fmt.empty())
         data.push_back("V4L2 H.264 output format: " + v4l2Fmt.substr(0, 100));
 
-    data.push_back("H.264 baseline/main/high profiles: supported by sitara_compatible-codec Vela");
+    data.push_back("H.264 baseline/main/high profiles: supported by vela_compatible-codec Vela");
     data.push_back("Max encode resolution: " + std::to_string(PI5_MAX_ENCODE_WIDTH) + "x" + std::to_string(PI5_MAX_ENCODE_HEIGHT));
 
     if (passed)
-        data.push_back("PASS: H.264 encoding hardware verified on Vela sitara_compatible-codec.");
+        data.push_back("PASS: H.264 encoding hardware verified on Vela vela_compatible-codec.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -336,14 +336,14 @@ TestOutput VideoEncodeDecodeTesting::testH264Encoding()
 
 // ---------------------------------------------------------------------------
 // 3. testAv1Encoding
-//    Verify the sitara_compatible-codec engine supports AV1 encoding (Vela has AV1 sitara_compatible-codec).
+//    Verify the vela_compatible-codec engine supports AV1 encoding (Vela has AV1 vela_compatible-codec).
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testAv1Encoding()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – rpivid/sitara_compatible-codec encoder (AV1 not supported on Vela)");
+    data.push_back("Platform: Vela Platform – rpivid/vela_compatible-codec encoder (AV1 not supported on Vela)");
     data.push_back("Note: AV1 encode is supported on Vela / Vela NX. Vela Nano does NOT support AV1 encode.");
 
     std::string model = vedGetModel();
@@ -380,7 +380,7 @@ TestOutput VideoEncodeDecodeTesting::testAv1Encoding()
     data.push_back("AV1 max encode resolution: " + std::to_string(PI5_MAX_ENCODE_WIDTH) + "x" + std::to_string(PI5_MAX_ENCODE_HEIGHT));
 
     if (passed)
-        data.push_back("PASS: AV1 encoding hardware verified on Vela sitara_compatible-codec.");
+        data.push_back("PASS: AV1 encoding hardware verified on Vela vela_compatible-codec.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -393,7 +393,7 @@ TestOutput VideoEncodeDecodeTesting::testAv1Encoding()
 
 // ---------------------------------------------------------------------------
 // 4. testMultipleStreamEncoding
-//    Verify the sitara_compatible-codec block can handle concurrent multi-stream encoding.
+//    Verify the vela_compatible-codec block can handle concurrent multi-stream encoding.
 //    Vela supports up to 4× 4K@60 or 8× 4K@30 simultaneously.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testMultipleStreamEncoding()
@@ -425,19 +425,19 @@ TestOutput VideoEncodeDecodeTesting::testMultipleStreamEncoding()
         }
     }
 
-    // Check for dual sitara_compatible-codec nodes (Vela has 2 engines, may appear as video10/video11)
+    // Check for dual vela_compatible-codec nodes (Vela has 2 engines, may appear as video10/video11)
     bool enc1Present = vedDeviceExists("/dev/video10");
     bool enc2Present = vedDeviceExists("/dev/video10") || vedDeviceExists("/dev/video101");
-    data.push_back("sitara_compatible-codec engine 0 (/dev/video10): " + std::string(enc1Present ? "PRESENT" : "NOT FOUND"));
-    data.push_back("sitara_compatible-codec engine 1 (/dev/video10 or video10): " +
+    data.push_back("vela_compatible-codec engine 0 (/dev/video10): " + std::string(enc1Present ? "PRESENT" : "NOT FOUND"));
+    data.push_back("vela_compatible-codec engine 1 (/dev/video10 or video10): " +
                    std::string(enc2Present ? "PRESENT" : "not found (may share one node)"));
 
     // Verify via GStreamer that nvv4l2h265enc can operate on multiple instances
     std::string gstRank = vedRunCmd("gst-inspect-1.0 nvv4l2h265enc 2>/dev/null | grep -i 'max-instances\\|num-enc' | head -3");
     if (!gstRank.empty())
-        data.push_back("GStreamer sitara_compatible-codec instances info: " + gstRank.substr(0, 120));
+        data.push_back("GStreamer vela_compatible-codec instances info: " + gstRank.substr(0, 120));
     else
-        data.push_back("Multi-stream capability confirmed by sitara_compatible-codec HW spec (2 engines on Vela).");
+        data.push_back("Multi-stream capability confirmed by vela_compatible-codec HW spec (2 engines on Vela).");
 
     if (passed)
         data.push_back("PASS: Multi-stream encoding hardware verified on Vela.");
@@ -453,7 +453,7 @@ TestOutput VideoEncodeDecodeTesting::testMultipleStreamEncoding()
 
 // ---------------------------------------------------------------------------
 // 5. testVariousResolutions
-//    Verify sitara_compatible-codec supports standard resolution ladder on Vela.
+//    Verify vela_compatible-codec supports standard resolution ladder on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testVariousResolutions()
 {
@@ -473,12 +473,12 @@ TestOutput VideoEncodeDecodeTesting::testVariousResolutions()
 
     bool encPresent = nvencPresent();
     bool decPresent = nvdecPresent();
-    data.push_back("sitara_compatible-codec present: " + std::string(encPresent ? "YES" : "NO"));
-    data.push_back("rpivid/sitara_compatible-codec present: " + std::string(decPresent ? "YES" : "NO"));
+    data.push_back("vela_compatible-codec present: " + std::string(encPresent ? "YES" : "NO"));
+    data.push_back("rpivid/vela_compatible-codec present: " + std::string(decPresent ? "YES" : "NO"));
 
     if (!encPresent && !decPresent) {
         passed = false;
-        data.push_back("FAIL: Neither sitara_compatible-codec nor rpivid/sitara_compatible-codec device nodes found.");
+        data.push_back("FAIL: Neither vela_compatible-codec nor rpivid/vela_compatible-codec device nodes found.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -503,7 +503,7 @@ TestOutput VideoEncodeDecodeTesting::testVariousResolutions()
     data.push_back("Max decode: " + std::to_string(PI5_MAX_DECODE_WIDTH) + "x" + std::to_string(PI5_MAX_DECODE_HEIGHT));
 
     if (passed)
-        data.push_back("PASS: All standard resolutions supported by Vela sitara_compatible-codec/rpivid.");
+        data.push_back("PASS: All standard resolutions supported by Vela vela_compatible-codec/rpivid.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -531,7 +531,7 @@ TestOutput VideoEncodeDecodeTesting::testVariousBitrates()
     data.push_back("V4L2 M2M device node: " + std::string(encPresent ? "PRESENT" : "NOT FOUND"));
     if (!encPresent) {
         passed = false;
-        data.push_back("FAIL: sitara_compatible-codec not available – cannot verify bitrate range.");
+        data.push_back("FAIL: vela_compatible-codec not available – cannot verify bitrate range.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -555,10 +555,10 @@ TestOutput VideoEncodeDecodeTesting::testVariousBitrates()
     if (!gstBitrate.empty())
         data.push_back("GStreamer bitrate properties: " + gstBitrate.substr(0, 150));
     else
-        data.push_back("Bitrate range verified against Vela sitara_compatible-codec specification.");
+        data.push_back("Bitrate range verified against Vela vela_compatible-codec specification.");
 
     if (passed)
-        data.push_back("PASS: Encoder bitrate range verified for Vela sitara_compatible-codec.");
+        data.push_back("PASS: Encoder bitrate range verified for Vela vela_compatible-codec.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -582,12 +582,12 @@ TestOutput VideoEncodeDecodeTesting::testVariousFrameRates()
 
     bool encPresent = nvencPresent();
     bool decPresent = nvdecPresent();
-    data.push_back("sitara_compatible-codec present: " + std::string(encPresent ? "YES" : "NO"));
-    data.push_back("rpivid/sitara_compatible-codec present: " + std::string(decPresent ? "YES" : "NO"));
+    data.push_back("vela_compatible-codec present: " + std::string(encPresent ? "YES" : "NO"));
+    data.push_back("rpivid/vela_compatible-codec present: " + std::string(decPresent ? "YES" : "NO"));
 
     if (!encPresent && !decPresent) {
         passed = false;
-        data.push_back("FAIL: Neither sitara_compatible-codec nor rpivid/sitara_compatible-codec found.");
+        data.push_back("FAIL: Neither vela_compatible-codec nor rpivid/vela_compatible-codec found.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -616,7 +616,7 @@ TestOutput VideoEncodeDecodeTesting::testVariousFrameRates()
     }
 
     if (passed)
-        data.push_back("PASS: All target frame rates verified for Vela sitara_compatible-codec/rpivid.");
+        data.push_back("PASS: All target frame rates verified for Vela vela_compatible-codec/rpivid.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -629,20 +629,20 @@ TestOutput VideoEncodeDecodeTesting::testVariousFrameRates()
 
 // ---------------------------------------------------------------------------
 // 8. testEncoderQualitySettings
-//    Verify sitara_compatible-codec quality presets (CQP, VBR, CBR, LOSSLESS) on Vela.
+//    Verify vela_compatible-codec quality presets (CQP, VBR, CBR, LOSSLESS) on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testEncoderQualitySettings()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – sitara_compatible-codec quality settings");
+    data.push_back("Platform: Vela Platform – vela_compatible-codec quality settings");
 
     bool encPresent = nvencPresent();
     data.push_back("V4L2 M2M device node: " + std::string(encPresent ? "PRESENT" : "NOT FOUND"));
     if (!encPresent) {
         passed = false;
-        data.push_back("FAIL: sitara_compatible-codec device not found.");
+        data.push_back("FAIL: vela_compatible-codec device not found.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -655,7 +655,7 @@ TestOutput VideoEncodeDecodeTesting::testEncoderQualitySettings()
 
     // Enumerate GStreamer nvv4l2h265enc quality/preset properties
     static const char* modes[] = {"CQP", "CBR", "VBR", "VBR_HQ"};
-    data.push_back("Rate-control modes supported by Vela sitara_compatible-codec:");
+    data.push_back("Rate-control modes supported by Vela vela_compatible-codec:");
     for (const char* m : modes)
         data.push_back("  " + std::string(m) + ": SUPPORTED");
 
@@ -665,14 +665,14 @@ TestOutput VideoEncodeDecodeTesting::testEncoderQualitySettings()
     if (!gstPresets.empty())
         data.push_back("GStreamer quality properties:\n  " + gstPresets.substr(0, 300));
     else
-        data.push_back("GStreamer inspect unavailable – quality modes verified against sitara_compatible-codec spec.");
+        data.push_back("GStreamer inspect unavailable – quality modes verified against vela_compatible-codec spec.");
 
     // Preset performance tiers
     data.push_back("Encoder presets: P1 (fastest) … P7 (slowest/best quality)");
     data.push_back("Lossless encoding: supported (H.264/H.265)");
 
     if (passed)
-        data.push_back("PASS: sitara_compatible-codec quality/rate-control settings verified on Vela.");
+        data.push_back("PASS: vela_compatible-codec quality/rate-control settings verified on Vela.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -692,14 +692,14 @@ TestOutput VideoEncodeDecodeTesting::testEncoderLatency()
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – sitara_compatible-codec encoder latency");
+    data.push_back("Platform: Vela Platform – vela_compatible-codec encoder latency");
     data.push_back("Latency threshold: " + std::to_string(PI5_ENC_LATENCY_THRESHOLD_MS) + " ms");
 
     bool encPresent = nvencPresent();
     data.push_back("V4L2 M2M device node: " + std::string(encPresent ? "PRESENT" : "NOT FOUND"));
     if (!encPresent) {
         passed = false;
-        data.push_back("FAIL: sitara_compatible-codec device not found.");
+        data.push_back("FAIL: vela_compatible-codec device not found.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -720,8 +720,8 @@ TestOutput VideoEncodeDecodeTesting::testEncoderLatency()
     data.push_back("Device enumeration latency (proxy): " + std::to_string(openMs) + " ms");
 
     // Zero-copy pipeline latency estimate from Vela V4L2 M2M specs
-    data.push_back("Typical sitara_compatible-codec first-frame latency (1080p H.265): < 16 ms at 60 fps");
-    data.push_back("Typical sitara_compatible-codec end-to-end pipeline latency: 1-2 frames");
+    data.push_back("Typical vela_compatible-codec first-frame latency (1080p H.265): < 16 ms at 60 fps");
+    data.push_back("Typical vela_compatible-codec end-to-end pipeline latency: 1-2 frames");
 
     // GStreamer latency query
     std::string gstLatency = vedRunCmd("gst-inspect-1.0 nvv4l2h265enc 2>/dev/null | grep -i latency | head -3");
@@ -742,7 +742,7 @@ TestOutput VideoEncodeDecodeTesting::testEncoderLatency()
 
 // ---------------------------------------------------------------------------
 // 10. testEncoderPowerConsumption
-//     Read VDD_GPU / VDD_SOC rail power during sitara_compatible-codec activity.
+//     Read VDD_GPU / VDD_SOC rail power during vela_compatible-codec activity.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testEncoderPowerConsumption()
 {
@@ -772,15 +772,15 @@ TestOutput VideoEncodeDecodeTesting::testEncoderPowerConsumption()
             data.push_back("INA3221 power rails: unavailable (run as root or platform may differ).");
     }
 
-    // sitara_compatible-codec engine presence still needed
+    // vela_compatible-codec engine presence still needed
     bool encPresent = nvencPresent();
     data.push_back("V4L2 M2M device node: " + std::string(encPresent ? "PRESENT" : "NOT FOUND"));
     if (!encPresent) {
         passed = false;
-        data.push_back("FAIL: sitara_compatible-codec device not found.");
+        data.push_back("FAIL: vela_compatible-codec device not found.");
     } else {
-        data.push_back("Encoder power tested: sitara_compatible-codec uses dedicated fixed-function hardware (low power).");
-        data.push_back("Typical sitara_compatible-codec power at 4K@60 H.265: ~2-4W increment on VDD_SOC rail.");
+        data.push_back("Encoder power tested: vela_compatible-codec uses dedicated fixed-function hardware (low power).");
+        data.push_back("Typical vela_compatible-codec power at 4K@60 H.265: ~2-4W increment on VDD_SOC rail.");
     }
 
     if (passed)
@@ -797,25 +797,25 @@ TestOutput VideoEncodeDecodeTesting::testEncoderPowerConsumption()
 
 // ---------------------------------------------------------------------------
 // 11. testH265Decoding
-//     Verify rpivid/sitara_compatible-codec H.265/HEVC decode support on Vela.
+//     Verify rpivid/vela_compatible-codec H.265/HEVC decode support on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testH265Decoding()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – rpivid/sitara_compatible-codec H.265/HEVC decoder");
-    data.push_back("rpivid/sitara_compatible-codec engine count: " + std::to_string(PI5_DEC_ENGINE_COUNT));
+    data.push_back("Platform: Vela Platform – rpivid/vela_compatible-codec H.265/HEVC decoder");
+    data.push_back("rpivid/vela_compatible-codec engine count: " + std::to_string(PI5_DEC_ENGINE_COUNT));
 
     std::string model = vedGetModel();
     if (!model.empty())
         data.push_back("Device model: " + model);
 
     bool decPresent = nvdecPresent();
-    data.push_back("rpivid/sitara_compatible-codec device node (/dev/video11): " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("rpivid/vela_compatible-codec device node (/dev/video11): " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
     if (!decPresent) {
         passed = false;
-        data.push_back("FAIL: rpivid/sitara_compatible-codec device node missing – H.265 decoder unavailable.");
+        data.push_back("FAIL: rpivid/vela_compatible-codec device node missing – H.265 decoder unavailable.");
     }
 
     // GStreamer HEVC decode plugin
@@ -836,7 +836,7 @@ TestOutput VideoEncodeDecodeTesting::testH265Decoding()
     data.push_back("Max decode resolution: " + std::to_string(PI5_MAX_DECODE_WIDTH) + "x" + std::to_string(PI5_MAX_DECODE_HEIGHT));
 
     if (passed)
-        data.push_back("PASS: H.265 decoding hardware verified on Vela rpivid/sitara_compatible-codec.");
+        data.push_back("PASS: H.265 decoding hardware verified on Vela rpivid/vela_compatible-codec.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -849,33 +849,33 @@ TestOutput VideoEncodeDecodeTesting::testH265Decoding()
 
 // ---------------------------------------------------------------------------
 // 12. testH264Decoding
-//     Verify rpivid/sitara_compatible-codec H.264/AVC decode support.
+//     Verify rpivid/vela_compatible-codec H.264/AVC decode support.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testH264Decoding()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – rpivid/sitara_compatible-codec H.264/AVC decoder");
+    data.push_back("Platform: Vela Platform – rpivid/vela_compatible-codec H.264/AVC decoder");
 
     bool decPresent = nvdecPresent();
-    data.push_back("rpivid/sitara_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("rpivid/vela_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
     if (!decPresent) {
         passed = false;
-        data.push_back("FAIL: rpivid/sitara_compatible-codec device node missing.");
+        data.push_back("FAIL: rpivid/vela_compatible-codec device node missing.");
     }
 
     std::string gstH264Dec = vedRunCmd("gst-inspect-1.0 nvv4l2decoder 2>/dev/null | grep -i h264 | head -3");
     if (!gstH264Dec.empty())
         data.push_back("GStreamer H.264 decoder caps: " + gstH264Dec.substr(0, 120));
     else
-        data.push_back("H.264 decode verified via rpivid/sitara_compatible-codec HW spec (Vela supports all AVC profiles).");
+        data.push_back("H.264 decode verified via rpivid/vela_compatible-codec HW spec (Vela supports all AVC profiles).");
 
     data.push_back("H.264 profiles: Baseline, Main, High, High-4:2:2, High-4:4:4");
     data.push_back("Max decode resolution: " + std::to_string(PI5_MAX_DECODE_WIDTH) + "x" + std::to_string(PI5_MAX_DECODE_HEIGHT));
 
     if (passed)
-        data.push_back("PASS: H.264 decoding hardware verified on Vela rpivid/sitara_compatible-codec.");
+        data.push_back("PASS: H.264 decoding hardware verified on Vela rpivid/vela_compatible-codec.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -888,33 +888,33 @@ TestOutput VideoEncodeDecodeTesting::testH264Decoding()
 
 // ---------------------------------------------------------------------------
 // 13. testAv1Decoding
-//     Verify rpivid/sitara_compatible-codec AV1 decode support on Vela.
+//     Verify rpivid/vela_compatible-codec AV1 decode support on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testAv1Decoding()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – rpivid/sitara_compatible-codec AV1 decoder");
+    data.push_back("Platform: Vela Platform – rpivid/vela_compatible-codec AV1 decoder");
 
     bool decPresent = nvdecPresent();
-    data.push_back("rpivid/sitara_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("rpivid/vela_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
     if (!decPresent) {
         passed = false;
-        data.push_back("FAIL: rpivid/sitara_compatible-codec device node missing.");
+        data.push_back("FAIL: rpivid/vela_compatible-codec device node missing.");
     }
 
     std::string gstAV1Dec = vedRunCmd("gst-inspect-1.0 nvv4l2decoder 2>/dev/null | grep -i av1 | head -3");
     if (!gstAV1Dec.empty())
         data.push_back("GStreamer AV1 decoder caps: " + gstAV1Dec.substr(0, 120));
     else
-        data.push_back("AV1 decode verified via rpivid/sitara_compatible-codec HW spec (Vela rpivid/sitara_compatible-codec rev. 5.x supports AV1).");
+        data.push_back("AV1 decode verified via rpivid/vela_compatible-codec HW spec (Vela rpivid/vela_compatible-codec rev. 5.x supports AV1).");
 
     data.push_back("AV1 profiles: Main (8-bit and 10-bit)");
     data.push_back("Max decode resolution: " + std::to_string(PI5_MAX_DECODE_WIDTH) + "x" + std::to_string(PI5_MAX_DECODE_HEIGHT));
 
     if (passed)
-        data.push_back("PASS: AV1 decoding hardware verified on Vela rpivid/sitara_compatible-codec.");
+        data.push_back("PASS: AV1 decoding hardware verified on Vela rpivid/vela_compatible-codec.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -927,33 +927,33 @@ TestOutput VideoEncodeDecodeTesting::testAv1Decoding()
 
 // ---------------------------------------------------------------------------
 // 14. testVp9Decoding
-//     Verify rpivid/sitara_compatible-codec VP9 decode support on Vela.
+//     Verify rpivid/vela_compatible-codec VP9 decode support on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testVp9Decoding()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – rpivid/sitara_compatible-codec VP9 decoder");
+    data.push_back("Platform: Vela Platform – rpivid/vela_compatible-codec VP9 decoder");
 
     bool decPresent = nvdecPresent();
-    data.push_back("rpivid/sitara_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("rpivid/vela_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
     if (!decPresent) {
         passed = false;
-        data.push_back("FAIL: rpivid/sitara_compatible-codec device node missing.");
+        data.push_back("FAIL: rpivid/vela_compatible-codec device node missing.");
     }
 
     std::string gstVP9Dec = vedRunCmd("gst-inspect-1.0 nvv4l2decoder 2>/dev/null | grep -i vp9 | head -3");
     if (!gstVP9Dec.empty())
         data.push_back("GStreamer VP9 decoder caps: " + gstVP9Dec.substr(0, 120));
     else
-        data.push_back("VP9 decode verified via rpivid/sitara_compatible-codec HW spec (Vela supports VP9 profile 0,2).");
+        data.push_back("VP9 decode verified via rpivid/vela_compatible-codec HW spec (Vela supports VP9 profile 0,2).");
 
     data.push_back("VP9 profiles: 0 (8-bit), 2 (10-bit)");
-    data.push_back("Max VP9 decode resolution: 4096x4096 (Vela rpivid/sitara_compatible-codec)");
+    data.push_back("Max VP9 decode resolution: 4096x4096 (Vela rpivid/vela_compatible-codec)");
 
     if (passed)
-        data.push_back("PASS: VP9 decoding hardware verified on Vela rpivid/sitara_compatible-codec.");
+        data.push_back("PASS: VP9 decoding hardware verified on Vela rpivid/vela_compatible-codec.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -966,15 +966,15 @@ TestOutput VideoEncodeDecodeTesting::testVp9Decoding()
 
 // ---------------------------------------------------------------------------
 // 15. testMultipleStreamDecoding
-//     Verify concurrent multi-stream decode on Vela (2 rpivid/sitara_compatible-codec engines).
+//     Verify concurrent multi-stream decode on Vela (2 rpivid/vela_compatible-codec engines).
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testMultipleStreamDecoding()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – Multi-stream rpivid/sitara_compatible-codec decoding");
-    data.push_back("rpivid/sitara_compatible-codec engine count: " + std::to_string(PI5_DEC_ENGINE_COUNT));
+    data.push_back("Platform: Vela Platform – Multi-stream rpivid/vela_compatible-codec decoding");
+    data.push_back("rpivid/vela_compatible-codec engine count: " + std::to_string(PI5_DEC_ENGINE_COUNT));
     data.push_back("Expected simultaneous 4K@60 streams: up to 8 (Vela)");
     data.push_back("Expected simultaneous 8K@30 streams: up to 2 (Vela)");
 
@@ -982,12 +982,12 @@ TestOutput VideoEncodeDecodeTesting::testMultipleStreamDecoding()
     bool dec1Present = vedDeviceExists("/dev/video11");
     bool dec2Present = vedDeviceExists("/dev/video18");
 
-    data.push_back("rpivid/sitara_compatible-codec engine 0 (/dev/video11): " + std::string(dec1Present ? "PRESENT" : "NOT FOUND"));
-    data.push_back("rpivid/sitara_compatible-codec engine 1 (/dev/video18): " + std::string(dec2Present ? "PRESENT" : "not found (may share node)"));
+    data.push_back("rpivid/vela_compatible-codec engine 0 (/dev/video11): " + std::string(dec1Present ? "PRESENT" : "NOT FOUND"));
+    data.push_back("rpivid/vela_compatible-codec engine 1 (/dev/video18): " + std::string(dec2Present ? "PRESENT" : "not found (may share node)"));
 
     if (!decPresent) {
         passed = false;
-        data.push_back("FAIL: rpivid/sitara_compatible-codec device node missing.");
+        data.push_back("FAIL: rpivid/vela_compatible-codec device node missing.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1020,20 +1020,20 @@ TestOutput VideoEncodeDecodeTesting::testMultipleStreamDecoding()
 
 // ---------------------------------------------------------------------------
 // 16. test4k8kDecoding
-//     Verify rpivid/sitara_compatible-codec correctly handles 4K and 8K stream decoding.
+//     Verify rpivid/vela_compatible-codec correctly handles 4K and 8K stream decoding.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::test4k8kDecoding()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – 4K/8K rpivid/sitara_compatible-codec decode capability");
+    data.push_back("Platform: Vela Platform – 4K/8K rpivid/vela_compatible-codec decode capability");
 
     bool decPresent = nvdecPresent();
-    data.push_back("rpivid/sitara_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("rpivid/vela_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
     if (!decPresent) {
         passed = false;
-        data.push_back("FAIL: rpivid/sitara_compatible-codec device node missing.");
+        data.push_back("FAIL: rpivid/vela_compatible-codec device node missing.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1063,7 +1063,7 @@ TestOutput VideoEncodeDecodeTesting::test4k8kDecoding()
             passed = false;
     }
 
-    data.push_back("8K H.265 decode: requires rpivid/sitara_compatible-codec 5.x (Vela has rpivid/sitara_compatible-codec 5.x) – SUPPORTED");
+    data.push_back("8K H.265 decode: requires rpivid/vela_compatible-codec 5.x (Vela has rpivid/vela_compatible-codec 5.x) – SUPPORTED");
 
     if (passed)
         data.push_back("PASS: 4K/8K decoding hardware capability verified on Vela.");
@@ -1079,21 +1079,21 @@ TestOutput VideoEncodeDecodeTesting::test4k8kDecoding()
 
 // ---------------------------------------------------------------------------
 // 17. testDecoderLatency
-//     Assess rpivid/sitara_compatible-codec decoding latency (device-open + init overhead).
+//     Assess rpivid/vela_compatible-codec decoding latency (device-open + init overhead).
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testDecoderLatency()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – rpivid/sitara_compatible-codec decoder latency");
+    data.push_back("Platform: Vela Platform – rpivid/vela_compatible-codec decoder latency");
     data.push_back("Latency threshold: " + std::to_string(PI5_DEC_LATENCY_THRESHOLD_MS) + " ms");
 
     bool decPresent = nvdecPresent();
-    data.push_back("rpivid/sitara_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("rpivid/vela_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
     if (!decPresent) {
         passed = false;
-        data.push_back("FAIL: rpivid/sitara_compatible-codec device not found.");
+        data.push_back("FAIL: rpivid/vela_compatible-codec device not found.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1111,8 +1111,8 @@ TestOutput VideoEncodeDecodeTesting::testDecoderLatency()
     double statMs = std::chrono::duration<double, std::milli>(t1 - t0).count();
     data.push_back("Device node access time (proxy): " + std::to_string(statMs) + " ms");
 
-    data.push_back("Typical rpivid/sitara_compatible-codec first-frame (1080p H.265): < 16 ms @ 60 fps");
-    data.push_back("Typical rpivid/sitara_compatible-codec pipeline latency: 1 frame (zero-copy path)");
+    data.push_back("Typical rpivid/vela_compatible-codec first-frame (1080p H.265): < 16 ms @ 60 fps");
+    data.push_back("Typical rpivid/vela_compatible-codec pipeline latency: 1 frame (zero-copy path)");
 
     std::string gstDec = vedRunCmd("gst-inspect-1.0 nvv4l2decoder 2>/dev/null | grep -i latency | head -3");
     if (!gstDec.empty())
@@ -1132,20 +1132,20 @@ TestOutput VideoEncodeDecodeTesting::testDecoderLatency()
 
 // ---------------------------------------------------------------------------
 // 18. testCorruptStreamHandling
-//     Verify that rpivid/sitara_compatible-codec reacts predictably to injected corrupt bitstreams.
+//     Verify that rpivid/vela_compatible-codec reacts predictably to injected corrupt bitstreams.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testCorruptStreamHandling()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – rpivid/sitara_compatible-codec corrupt-stream robustness");
+    data.push_back("Platform: Vela Platform – rpivid/vela_compatible-codec corrupt-stream robustness");
 
     bool decPresent = nvdecPresent();
-    data.push_back("rpivid/sitara_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("rpivid/vela_compatible-codec device node: " + std::string(decPresent ? "PRESENT" : "NOT FOUND"));
     if (!decPresent) {
         passed = false;
-        data.push_back("FAIL: rpivid/sitara_compatible-codec device node missing.");
+        data.push_back("FAIL: rpivid/vela_compatible-codec device node missing.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1178,14 +1178,14 @@ TestOutput VideoEncodeDecodeTesting::testCorruptStreamHandling()
             data.push_back("WARNING: Corrupt-stream test timed out – decoder did not error quickly.");
         }
     } else {
-        data.push_back("GStreamer pipeline not available – using rpivid/sitara_compatible-codec error-recovery documentation.");
-        data.push_back("rpivid/sitara_compatible-codec on Vela implements error-concealment and stream-reset on corruption.");
+        data.push_back("GStreamer pipeline not available – using rpivid/vela_compatible-codec error-recovery documentation.");
+        data.push_back("rpivid/vela_compatible-codec on Vela implements error-concealment and stream-reset on corruption.");
     }
 
     data.push_back("Elapsed: " + std::to_string(elapsed) + " ms");
 
     if (passed)
-        data.push_back("PASS: Corrupt-stream handling verified on Vela rpivid/sitara_compatible-codec.");
+        data.push_back("PASS: Corrupt-stream handling verified on Vela rpivid/vela_compatible-codec.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1198,24 +1198,24 @@ TestOutput VideoEncodeDecodeTesting::testCorruptStreamHandling()
 
 // ---------------------------------------------------------------------------
 // 19. testJpegCompression
-//     Verify sitara_compatible-codec MJPEG hardware JPEG compression on Vela.
+//     Verify vela_compatible-codec MJPEG hardware JPEG compression on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testJpegCompression()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – sitara_compatible-codec MJPEG hardware JPEG compression");
-    data.push_back("sitara_compatible-codec MJPEG engine count: " + std::to_string(1));
+    data.push_back("Platform: Vela Platform – vela_compatible-codec MJPEG hardware JPEG compression");
+    data.push_back("vela_compatible-codec MJPEG engine count: " + std::to_string(1));
 
     bool jpgPresent = nvjpgPresent();
-    data.push_back("sitara_compatible-codec MJPEG device node (/dev/video10): " + std::string(jpgPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("vela_compatible-codec MJPEG device node (/dev/video10): " + std::string(jpgPresent ? "PRESENT" : "NOT FOUND"));
     if (!jpgPresent) {
         passed = false;
-        data.push_back("FAIL: sitara_compatible-codec MJPEG device node missing – hardware JPEG compression unavailable.");
+        data.push_back("FAIL: vela_compatible-codec MJPEG device node missing – hardware JPEG compression unavailable.");
     }
 
-    // GStreamer sitara_compatible-codec MJPEG encoder plugin
+    // GStreamer vela_compatible-codec MJPEG encoder plugin
     std::string gstJpegEnc = vedRunCmd("gst-inspect-1.0 nvjpegenc 2>/dev/null | head -4");
     if (!gstJpegEnc.empty())
         data.push_back("GStreamer nvjpegenc plugin: " + gstJpegEnc.substr(0, 120));
@@ -1224,7 +1224,7 @@ TestOutput VideoEncodeDecodeTesting::testJpegCompression()
         if (!gstJpeg2.empty())
             data.push_back("JPEG via camera pipeline: " + gstJpeg2.substr(0, 100));
         else
-            data.push_back("GStreamer nvjpegenc not found – relying on sitara_compatible-codec MJPEG device-node check.");
+            data.push_back("GStreamer nvjpegenc not found – relying on vela_compatible-codec MJPEG device-node check.");
     }
 
     // V4L2 MJPEG codec clock
@@ -1237,7 +1237,7 @@ TestOutput VideoEncodeDecodeTesting::testJpegCompression()
     data.push_back("JPEG baseline and progressive modes: SUPPORTED");
 
     if (passed)
-        data.push_back("PASS: sitara_compatible-codec MJPEG JPEG compression hardware verified on Vela.");
+        data.push_back("PASS: vela_compatible-codec MJPEG JPEG compression hardware verified on Vela.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1250,35 +1250,35 @@ TestOutput VideoEncodeDecodeTesting::testJpegCompression()
 
 // ---------------------------------------------------------------------------
 // 20. testJpegDecompression
-//     Verify sitara_compatible-codec MJPEG hardware JPEG decompression on Vela.
+//     Verify vela_compatible-codec MJPEG hardware JPEG decompression on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testJpegDecompression()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – sitara_compatible-codec MJPEG hardware JPEG decompression");
-    data.push_back("sitara_compatible-codec MJPEG engine count: " + std::to_string(1));
+    data.push_back("Platform: Vela Platform – vela_compatible-codec MJPEG hardware JPEG decompression");
+    data.push_back("vela_compatible-codec MJPEG engine count: " + std::to_string(1));
 
     bool jpgPresent = nvjpgPresent();
-    data.push_back("sitara_compatible-codec MJPEG device node: " + std::string(jpgPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("vela_compatible-codec MJPEG device node: " + std::string(jpgPresent ? "PRESENT" : "NOT FOUND"));
     if (!jpgPresent) {
         passed = false;
-        data.push_back("FAIL: sitara_compatible-codec MJPEG device node missing.");
+        data.push_back("FAIL: vela_compatible-codec MJPEG device node missing.");
     }
 
-    // GStreamer sitara_compatible-codec MJPEG decoder plugin
+    // GStreamer vela_compatible-codec MJPEG decoder plugin
     std::string gstJpegDec = vedRunCmd("gst-inspect-1.0 nvjpegdec 2>/dev/null | head -4");
     if (!gstJpegDec.empty())
         data.push_back("GStreamer nvjpegdec plugin: " + gstJpegDec.substr(0, 120));
     else
-        data.push_back("GStreamer nvjpegdec not found – relying on sitara_compatible-codec MJPEG device-node check.");
+        data.push_back("GStreamer nvjpegdec not found – relying on vela_compatible-codec MJPEG device-node check.");
 
     data.push_back("JPEG decompression output formats: NV12, RGBA, I420");
     data.push_back("Max JPEG source resolution: 4K (16384×16384 per engine spec)");
 
     if (passed)
-        data.push_back("PASS: sitara_compatible-codec MJPEG JPEG decompression hardware verified on Vela.");
+        data.push_back("PASS: vela_compatible-codec MJPEG JPEG decompression hardware verified on Vela.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1461,26 +1461,26 @@ TestOutput VideoEncodeDecodeTesting::testColorSpaceConversions()
 
 // ---------------------------------------------------------------------------
 // 24. testJpegQualityLevels
-//     Verify sitara_compatible-codec MJPEG quality level range (1–100) on Vela.
+//     Verify vela_compatible-codec MJPEG quality level range (1–100) on Vela.
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testJpegQualityLevels()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – sitara_compatible-codec MJPEG JPEG quality levels");
+    data.push_back("Platform: Vela Platform – vela_compatible-codec MJPEG JPEG quality levels");
 
     bool jpgPresent = nvjpgPresent();
-    data.push_back("sitara_compatible-codec MJPEG device node: " + std::string(jpgPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("vela_compatible-codec MJPEG device node: " + std::string(jpgPresent ? "PRESENT" : "NOT FOUND"));
     if (!jpgPresent) {
         passed = false;
-        data.push_back("FAIL: sitara_compatible-codec MJPEG device node missing.");
+        data.push_back("FAIL: vela_compatible-codec MJPEG device node missing.");
     }
 
     static const int quallevels[] = {10, 25, 50, 75, 85, 95, 100};
     data.push_back("JPEG quality levels (Q) tested:");
     for (int q : quallevels) {
-        // sitara_compatible-codec MJPEG supports Q 1-100
+        // vela_compatible-codec MJPEG supports Q 1-100
         bool ok = (q >= 1 && q <= 100);
         data.push_back("  Q=" + std::to_string(q) + ": " + (ok ? "IN_RANGE" : "OUT_OF_RANGE"));
         if (!ok)
@@ -1492,10 +1492,10 @@ TestOutput VideoEncodeDecodeTesting::testJpegQualityLevels()
     if (!gstQ.empty())
         data.push_back("GStreamer JPEG quality property: " + gstQ.substr(0, 120));
     else
-        data.push_back("Quality range Q1-Q100 verified against sitara_compatible-codec MJPEG Vela specification.");
+        data.push_back("Quality range Q1-Q100 verified against vela_compatible-codec MJPEG Vela specification.");
 
     if (passed)
-        data.push_back("PASS: sitara_compatible-codec MJPEG JPEG quality levels verified on Vela.");
+        data.push_back("PASS: vela_compatible-codec MJPEG JPEG quality levels verified on Vela.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1508,22 +1508,22 @@ TestOutput VideoEncodeDecodeTesting::testJpegQualityLevels()
 
 // ---------------------------------------------------------------------------
 // 25. testNvjpgThroughput
-//     Measure sitara_compatible-codec MJPEG JPEG engine throughput (megapixels/second).
+//     Measure vela_compatible-codec MJPEG JPEG engine throughput (megapixels/second).
 // ---------------------------------------------------------------------------
 TestOutput VideoEncodeDecodeTesting::testNvjpgThroughput()
 {
     std::vector<std::string> data;
     bool passed = true;
 
-    data.push_back("Platform: Vela Platform – sitara_compatible-codec MJPEG throughput measurement");
-    data.push_back("sitara_compatible-codec MJPEG engine count: " + std::to_string(1));
+    data.push_back("Platform: Vela Platform – vela_compatible-codec MJPEG throughput measurement");
+    data.push_back("vela_compatible-codec MJPEG engine count: " + std::to_string(1));
     data.push_back("Min expected aggregate throughput: " + std::to_string(PI5_JPEG_THROUGHPUT_MIN_MPS) + " MP/s");
 
     bool jpgPresent = nvjpgPresent();
-    data.push_back("sitara_compatible-codec MJPEG device node: " + std::string(jpgPresent ? "PRESENT" : "NOT FOUND"));
+    data.push_back("vela_compatible-codec MJPEG device node: " + std::string(jpgPresent ? "PRESENT" : "NOT FOUND"));
     if (!jpgPresent) {
         passed = false;
-        data.push_back("FAIL: sitara_compatible-codec MJPEG device node missing – throughput test skipped.");
+        data.push_back("FAIL: vela_compatible-codec MJPEG device node missing – throughput test skipped.");
         {
             TestOutput _out;
             _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;
@@ -1541,15 +1541,15 @@ TestOutput VideoEncodeDecodeTesting::testNvjpgThroughput()
         data.push_back("V4L2 MJPEG codec clock: " + std::to_string(freqMHz) + " MHz");
         // Rough throughput: ~1 pixel/cycle per engine × 2 engines × freq
         double estimatedMps = (freqMHz * 1) / 1000.0;
-        data.push_back("sitara_compatible-codec MJPEG estimated peak throughput: " + std::to_string(estimatedMps) + " MP/s");
+        data.push_back("vela_compatible-codec MJPEG estimated peak throughput: " + std::to_string(estimatedMps) + " MP/s");
         if (estimatedMps < PI5_JPEG_THROUGHPUT_MIN_MPS) {
             passed = false;
-            data.push_back("FAIL: Estimated sitara_compatible-codec MJPEG throughput below threshold.");
+            data.push_back("FAIL: Estimated vela_compatible-codec MJPEG throughput below threshold.");
         }
     } else {
         // Use documented Vela spec as fallback
         data.push_back("V4L2 MJPEG codec clock: unavailable – using documented specification.");
-        data.push_back("Vela sitara_compatible-codec MJPEG aggregate throughput (documented): ~800 MP/s (2 engines)");
+        data.push_back("Vela vela_compatible-codec MJPEG aggregate throughput (documented): ~800 MP/s (2 engines)");
         double docThroughput = 800.0;
         if (docThroughput >= PI5_JPEG_THROUGHPUT_MIN_MPS)
             data.push_back("Documented throughput meets minimum threshold.");
@@ -1560,7 +1560,7 @@ TestOutput VideoEncodeDecodeTesting::testNvjpgThroughput()
     }
 
     if (passed)
-        data.push_back("PASS: sitara_compatible-codec MJPEG throughput verified on Vela.");
+        data.push_back("PASS: vela_compatible-codec MJPEG throughput verified on Vela.");
     {
         TestOutput _out;
         _out.status = passed ? hal::Status::PASS : hal::Status::FAIL;

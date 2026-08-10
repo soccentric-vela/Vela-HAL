@@ -613,7 +613,7 @@ TestOutput EthernetTesting::testTsnLatencyGuarantees()
         data.push_back("Kernel: " + v.substr(0, 80));
         rtKernel = (v.find("PREEMPT_RT") != std::string::npos || v.find("PREEMPT RT") != std::string::npos);
     }
-    data.push_back("RT kernel (PREEMPT_RT): " + std::string(rtKernel ? "YES" : "no (use sitara-realtime kernel for TSN)"));
+    data.push_back("RT kernel (PREEMPT_RT): " + std::string(rtKernel ? "YES" : "no (use Qualcomm QCS6490-realtime kernel for TSN)"));
     data.push_back("PASS: TSN latency check complete.");
     {
         TestOutput _out;

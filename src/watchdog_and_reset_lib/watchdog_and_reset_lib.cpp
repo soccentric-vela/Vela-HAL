@@ -70,7 +70,7 @@ TestOutput WatchdogAndResetTesting::testWatchdogTimerFunctionality()
     data.push_back("/dev/watchdog0 present: " + std::string(wdExists ? "yes" : "no"));
 
     if (!wdExists) {
-        data.push_back("INFO: Load watchdog driver: modprobe sitara_compatible-wdt or cpu-thermal-wdt");
+        data.push_back("INFO: Load watchdog driver: modprobe vela_compatible-wdt or cpu-thermal-wdt");
         data.push_back("INFO: Enable via /boot/firmware/extlinux.conf: dtparam=watchdog=on");
         {
             TestOutput _out;

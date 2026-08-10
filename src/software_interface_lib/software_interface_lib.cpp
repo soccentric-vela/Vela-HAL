@@ -141,7 +141,7 @@ TestOutput SoftwareInterfaceTesting::testLinuxKernelBoot()
 /**
  * @brief Verify Vela-specific kernel drivers are loaded.
  * @details Checks /proc/modules (or lsmod) for key Vela drivers:
- *          cpu-thermal, rp1 (south-bridge), v3d (GPU), sitara_compatible_dma, nvme, xhci_hcd.
+ *          cpu-thermal, rp1 (south-bridge), v3d (GPU), vela_compatible_dma, nvme, xhci_hcd.
  */
 TestOutput SoftwareInterfaceTesting::testDeviceDriverLoading()
 {
@@ -152,7 +152,7 @@ TestOutput SoftwareInterfaceTesting::testDeviceDriverLoading()
         {"v3d",           "VideoCore VII GPU"},
         {"nvme",          "NVMe/PCIe storage"},
         {"xhci_hcd",      "USB3 xHCI host"},
-        {"sitara_compatible_dma",   "DMA engine"},
+        {"vela_compatible_dma",   "DMA engine"},
         {"snd_vela_compatible",   "Vela compatible ALSA audio"},
         {"brcmfmac",      "BCM WiFi (optional)"},
         {"gpio_brcmstb",  "GPIO (Vela gpiochip4)"},
@@ -201,7 +201,7 @@ TestOutput SoftwareInterfaceTesting::testDeviceDriverLoading()
 /**
  * @brief Verify that critical systemd services are active on Vela.
  * @details Checks systemd unit state for ssh, dbus, networking, and
- *          vela-sitara-specific services (vela-config, rpmsg-pru-bridge if present).
+ *          vela-Qualcomm QCS6490-specific services (vela-config, rpmsg-pru-bridge if present).
  */
 TestOutput SoftwareInterfaceTesting::testSystemServiceStartup()
 {
@@ -290,7 +290,7 @@ TestOutput SoftwareInterfaceTesting::testApplicationFramework()
     if (!vcPath.empty())
         data.push_back("[PASS] ti-syscmd available: " + vcPath);
     else
-        data.push_back("[INFO] ti-syscmd not found (sitara-userland not installed)");
+        data.push_back("[INFO] ti-syscmd not found (Qualcomm QCS6490-userland not installed)");
 
     {
         TestOutput _out;
@@ -525,7 +525,7 @@ TestOutput SoftwareInterfaceTesting::testMultimediaApi()
 
     // HDMI audio (vc4-hdmi)
     bool hdmiAudio = swPathExists("/proc/asound") &&
-                     swRunCmd("grep -l 'vc4-hdmi\\|sitara_compatible' /proc/asound/cards 2>/dev/null | wc -l") != "0";
+                     swRunCmd("grep -l 'vc4-hdmi\\|vela_compatible' /proc/asound/cards 2>/dev/null | wc -l") != "0";
     (void)hdmiAudio;
 
     // GStreamer pipeline test (fakesrc → fakesink, no hardware needed)
