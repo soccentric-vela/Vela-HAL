@@ -1,0 +1,38 @@
+# Build directories
+build/
+bin/
+lib/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+docs/
+
+# Temporary files
+*.tmp
+*.log
+
+# Coverage reports
+*.gcda
+*.gcno
+*.gcov
+coverage/
+
+# Valgrind files
+callgrind.out.*
+massif.out.*
+
+# Cppcheck reports
+cppcheck_results.xml
+
+build_*/
+build_*/**/*
+build
