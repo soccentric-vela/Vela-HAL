@@ -41,3 +41,52 @@ make help
 2. Run static analysis before submitting (`make cppcheck`)
 3. Add tests for new functionality
 4. Update documentation as needed
+
+## Project Summary
+
+Vela-HAL is the C/C++ hardware abstraction and validation library for Qualcomm
+QCS6490 and its attached peripherals. CMake, Make, Docker, protobuf contracts,
+clang-format, cppcheck, and Doxygen are present in the repository. The module
+contracts cover CPU, GPU, deep-learning acceleration, video, camera, audio,
+PCIe, USB, GPIO, storage, Ethernet, sensors, and other interfaces. Existing
+platform notes identify device paths and target assumptions, but documented
+paths do not prove hardware availability or successful physical execution.
+
+The HAL repository is also the protocol source for neighboring client and SDK
+leaves. Its module protobuf files make the interface catalog explicit, while
+the CMake layout and platform header connect those interfaces to native build
+targets. The existing platform notes mention QCS6490 device nodes, camera and
+video paths, accelerator options, memory, thermal, and debug interfaces. Such
+values are useful deployment inputs but can become stale when board revisions
+change, so they should be checked against the active OS image and kernel.
+Automated unit or integration coverage should be reported per module rather
+than inferred from the number of protobuf files. Docker cross-build success is
+also distinct from a native hardware pass. This README preserves the useful
+build, analysis, and deployment guidance while making those evidence limits
+visible to anyone planning validation work.
+
+Module-level results should be recorded against the board revision and kernel
+drivers used for the test.
+
+The library can be built independently, but meaningful peripheral validation
+needs matching kernel drivers, permissions, firmware, cabling, and target
+configuration. Record those prerequisites with each future test result.
+
+## Feature Status
+
+| # | Name / Description | Implemented? | Test Coverage? | Manual Test |
+|---:|---|---|---|---|
+| 1 | CMake and Make build system | Implemented | Build commands documented; execution not verified | [ ] Manual verification required |
+| 2 | Protobuf common/client/HAL service contracts | Implemented | Contract presence; runtime coverage unknown | [ ] Manual verification required |
+| 3 | CPU and platform information interfaces | Implemented | Coverage not established from inventory | [ ] Manual verification required |
+| 4 | GPU and display interfaces | Implemented | Hardware/runtime coverage unknown | [ ] Manual verification required |
+| 5 | Deep-learning accelerator interfaces | Implemented | Hailo/Coral runtime coverage unknown | [ ] Manual verification required |
+| 6 | Video codec and camera interfaces | Implemented | Hardware/runtime coverage unknown | [ ] Manual verification required |
+| 7 | Audio, GPIO, I2C, SPI, CAN, and sensor interfaces | Implemented | Per-module coverage unknown | [ ] Manual verification required |
+| 8 | USB, PCIe, Ethernet, storage, and external connectors | Implemented | Per-module coverage unknown | [ ] Manual verification required |
+| 9 | Docker cross-compilation workflow | Partial | Makefile present; container build not verified | [ ] Manual verification required |
+| 10 | clang-format, cppcheck, and Doxygen tooling | Implemented | Tool execution not verified | [ ] Manual verification required |
+| 11 | Physical QCS6490 deployment and device-node behavior | Unknown | No hardware result available | [ ] Manual verification required |
+
+Use `make help`, `make build`, the project test/run targets, and Docker
+Makefiles. Run formatting and static analysis before hardware testing.
