@@ -42,6 +42,8 @@ make help
 3. Add tests for new functionality
 4. Update documentation as needed
 
+## Overview
+
 ## Project Summary
 
 Vela-HAL is the C/C++ hardware abstraction and validation library for Qualcomm
