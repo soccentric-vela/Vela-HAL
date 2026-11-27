@@ -30,9 +30,9 @@ IP_B := 192.168.1.13
 #   make deploy USER=pi PASS=<password>
 #   HAL_SSH_USER=pi HAL_SSH_PASS=<password> make deploy
 # Do NOT commit real credentials here.
-USER := $(or $(HAL_SSH_USER),nvidia)
-PASS := $(or $(HAL_SSH_PASS),nvidia)
-SSHPASS := sshpass -p $(PASS)
+USER := $(or $(HAL_SSH_USER),root)
+PASS := $(HAL_SSH_PASS)
+SSHPASS := $(if $(PASS),sshpass -p $(PASS))
 SSH := $(SSHPASS) ssh -o StrictHostKeyChecking=no
 SCP := $(SSHPASS) scp -o StrictHostKeyChecking=no
 
@@ -89,7 +89,7 @@ list: ## List available test applications
 # -t: allocate a pseudo-TTY so Ctrl-C (SIGINT) is forwarded to the container
 # --init: use tini as PID 1 to properly propagate signals to child processes (e.g. ninja)
 # ccache volume: persist compilation cache across docker runs
-DOCKER_RUN := docker run --rm -t --init --platform linux/arm64 -v $(PWD):/workspace -v ccache-vela:/home/rpi/.ccache $(DOCKER_IMAGE) bash -c
+DOCKER_RUN := docker run --rm -t --init --platform linux/arm64 -v $(PWD):/workspace -v ccache-vela:/home/builder/.ccache $(DOCKER_IMAGE) bash -c
 
 docker-install: ## Install Docker if not present
 	@if ! command -v docker > /dev/null 2>&1; then \
@@ -121,7 +121,7 @@ docker-clean: docker-image ## Clean Docker build artifacts
 
 docker-shell: docker-image ## Start Docker shell for development
 	@echo "Starting Docker shell for development..."
-	docker run -it --rm --platform linux/arm64 -v $(PWD):/workspace -v ccache-vela:/home/rpi/.ccache $(DOCKER_IMAGE) bash
+	docker run -it --rm --platform linux/arm64 -v $(PWD):/workspace -v ccache-vela:/home/builder/.ccache $(DOCKER_IMAGE) bash
 
 docker-test: docker-build ## Run CTest inside Docker (ARM64 via QEMU)
 	@echo "Running tests inside Docker (ARM64 via QEMU)..."

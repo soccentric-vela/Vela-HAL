@@ -1,7 +1,7 @@
 /**
  * @file communication_interface_lib.cpp
  * @brief Implementation file for CommunicationInterfaceTesting class
- *        Targeted at Vela Platform platform.
+ *        Targeted at Vela platform.
  * @author sandesh ghimire
  * @copyright (C) Soccentric LLC */
 

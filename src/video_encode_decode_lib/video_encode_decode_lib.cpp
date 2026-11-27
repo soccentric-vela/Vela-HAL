@@ -145,7 +145,7 @@ static std::string vedGetModel()
     return vedReadFile(VELA_QCS6490_DT_MODEL_PATH);
 }
 
-/** Confirm we are running on a Vela Platform platform. */
+/** Confirm we are running on a Vela platform. */
 static bool isPi5Platform()
 {
     std::string model = vedGetModel();

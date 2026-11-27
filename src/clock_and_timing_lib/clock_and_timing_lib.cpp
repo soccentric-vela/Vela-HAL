@@ -1,7 +1,7 @@
 /**
  * @file clock_and_timing_lib.cpp
  * @brief Implementation file for ClockAndTimingTesting class
- *        Targets Vela Platform platform.
+ *        Targets Vela platform.
  * @author sandesh ghimire
  * @copyright (C) Soccentric LLC */
 

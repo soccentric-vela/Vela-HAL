@@ -7,7 +7,7 @@ build:
 	docker buildx build --platform linux/arm64 --load --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -t $(IMAGE_NAME) .
 
 run:
-	# No --gpus flag: Qualcomm QCS6490 has Qualcomm QCS6490 (not CUDA)
+	# No --gpus flag: Qualcomm QCS6490 has no CUDA-capable GPU
 	docker run -it --rm --hostname "Qualcomm QCS6490" $(IMAGE_NAME)
 
 clean:
